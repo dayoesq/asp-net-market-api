@@ -1,11 +1,10 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Market.Models;
+namespace Market.Models.Dtos;
 
-public class User
+public class UserCreationDto
 {
-    public int Id { get; set; }
     [Required]
     [MaxLength(25)]
     [MinLength(2)]

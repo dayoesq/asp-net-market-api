@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "26X3FbVd5T1MUjZOR5MK7YRaLqob3vfNbuytq+n2m13D3G5b2TnP9wgMgz136fSGAxAPyLgKjoXsBkggtmaReA==",
+  "dgSpecHash": "yUiSoktLdt9fYqmPZMc/4I/Tgz8Ktn8q9OLLe4oaO33F3BmvQiNW6JNYcIDKcaiB1cntZOWqlTRPX7vk+ZAfFA==",
   "success": true,
   "projectFilePath": "/Volumes/MacExtended/Market/Market.csproj",
   "expectedPackageFiles": [
+    "/Users/dayo/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "/Users/dayo/.nuget/packages/azure.core/1.25.0/azure.core.1.25.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/azure.identity/1.7.0/azure.identity.1.7.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.cryptography.internal/7.0.8/microsoft.aspnetcore.cryptography.internal.7.0.8.nupkg.sha512",
@@ -11,7 +13,7 @@
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.identity.entityframeworkcore/7.0.8/microsoft.aspnetcore.identity.entityframeworkcore.7.0.8.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.openapi/7.0.7/microsoft.aspnetcore.openapi.7.0.7.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.bcl.asyncinterfaces/1.1.1/microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
-    "/Users/dayo/.nuget/packages/microsoft.csharp/4.5.0/microsoft.csharp.4.5.0.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/microsoft.csharp/4.7.0/microsoft.csharp.4.7.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.data.sqlclient/5.1.1/microsoft.data.sqlclient.5.1.1.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.data.sqlclient.sni.runtime/5.1.0/microsoft.data.sqlclient.sni.runtime.5.1.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.entityframeworkcore/8.0.0-preview.5.23280.1/microsoft.entityframeworkcore.8.0.0-preview.5.23280.1.nupkg.sha512",
