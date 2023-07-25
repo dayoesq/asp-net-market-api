@@ -1,20 +1,18 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Market.Models;
 
-public class User
+public class ApplicationUser : IdentityUser
 {
     public int Id { get; set; }
     [Required]
     [MaxLength(25)]
     [MinLength(2)]
-    [DisplayName("First Name")]
     public string FirstName { get; set; }
     [Required]
     [MaxLength(25)]
     [MinLength(2)]
-    [DisplayName("Last Name")]
     public string LastName { get; set; }
     [Required]
     [EmailAddress]
@@ -24,12 +22,10 @@ public class User
     [MinLength(10)]
     public string Password { get; set; }
     [Compare("Password")]
-    [DisplayName("Password Confirmation")]
     public string PasswordConfirmation { get; set; }
     public string? Address { get; set; }
-    public string? Telephone { get; set; }
-    [DisplayName("IP Address")]
-    public string? IPAddress { get; set; }
+    public string? City { get; set; }
+    public string? Country { get; set; }
     public DateTime? RegisteredAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
