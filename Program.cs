@@ -1,10 +1,10 @@
 using System.Text;
 using Market.ApiBehaviours;
+using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
-using Market.Permissions;
-using Microsoft.AspNetCore.Authentication;
+using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +18,16 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add(typeof(ExceptionFilter));
     options.Filters.Add(typeof(BadRequestFilter));
-}).ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
+});
 
+//ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
+
+builder.Services.AddMvc(options =>
+{
+    options.Conventions.Add(new GlobalPrefix());
+});
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddCors(options =>
@@ -43,13 +51,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
             SymmetricSecurityKey
             (Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:Secret")!))
     };
-    
+
 });
 
-// builder.Services.AddAuthentication(options =>
+// builder.Services.AddAuthorization(options =>
 // {
-//     options.AddPolicy("Admin", policy =>
-//         policy.Requirements.Add(new Permission("admin")));
+//     options.AddPolicy(Constants.ADMIN, policy => policy.RequireClaim("role", "admin"));
 // });
 
 
@@ -73,7 +80,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
