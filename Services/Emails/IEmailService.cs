@@ -1,8 +1,6 @@
-namespace Market.Interfaces.Emails;
+namespace Market.Services.Emails;
 
 public interface IEmailService
 {
     Task SendVerificationEmail(string email, int verificationCode);
 }
-
-

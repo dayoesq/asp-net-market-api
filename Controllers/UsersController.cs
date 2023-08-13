@@ -1,8 +1,5 @@
 using AutoMapper;
 using Market.DataContext;
-using Market.Models.DTOS;
-using Market.Utils;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,20 +21,18 @@ public class UsersController : ControllerBase
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Constants.ADMIN)]
     [Authorize(Roles = "admin, super")]
     [HttpGet(Name = "GetAllUsers")]
-    public async Task<ActionResult<IEnumerable<UserDto>>> Get()
+    public async Task<IActionResult> Get()
     {
         var users = await _context.Users.ToListAsync();
-        return _mapper.Map<ActionResult<IEnumerable<UserDto>>>(users);
+        return _mapper.Map<IActionResult>(users);
         
     }
     
     [Authorize]
     [HttpGet("{Id}", Name = "GetUser")]
-    public async Task<ActionResult<UserDto>> Get(string id)
+    public async Task<IActionResult> Get(string id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return NotFound();
-        return _mapper.Map<UserDto>(user);
-
+        return user == null ? NotFound() : _mapper.Map<IActionResult>(user);
     }
 }
