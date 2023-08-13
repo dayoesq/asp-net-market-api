@@ -1,5 +1,3 @@
-using Market.Interfaces.Emails;
-
 namespace Market.Services.Emails;
 
 public class MailgunEmailService : IEmailService

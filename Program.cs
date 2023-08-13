@@ -4,7 +4,6 @@ using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
-using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +19,15 @@ builder.Services.AddControllers(options =>
     options.Filters.Add(typeof(BadRequestFilter));
 });
 
+builder.Services.AddScoped<ValidateImageAndVideoFileAttribute>(); // Add the custom attribute
+
 //ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 
 builder.Services.AddMvc(options =>
 {
     options.Conventions.Add(new GlobalPrefix());
 });
+
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddAutoMapper(typeof(Program));
