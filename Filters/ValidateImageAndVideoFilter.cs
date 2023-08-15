@@ -1,13 +1,14 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Market.Filters;
 
     [AttributeUsage(AttributeTargets.Method)]
-    public class ValidateImageAndVideoFileAttribute : ActionFilterAttribute
+    public class ValidateImageAndVideoFilterAttribute : ActionFilterAttribute
     {
         private readonly string _validationType;
 
-        public ValidateImageAndVideoFileAttribute(string validationType = "file")
+        public ValidateImageAndVideoFilterAttribute(string validationType = "file")
         {
             _validationType = validationType;
         }
@@ -27,7 +28,7 @@ namespace Market.Filters;
             base.OnActionExecuting(context);
         }
 
-        private bool IsValidFile(IFormFile file, string validationType, ActionExecutingContext context)
+        private static bool IsValidFile(IFormFile file, string validationType, ActionContext context)
         {
             var configuration = (IConfiguration)context.HttpContext.RequestServices.GetService(typeof(IConfiguration))!;
             var maxFileSize = configuration.GetValue<int>("Files:MaxFileSize");
@@ -47,13 +48,13 @@ namespace Market.Filters;
 
             using var stream = file.OpenReadStream();
             using var reader = new BinaryReader(stream);
-            var headerBytes = reader.ReadBytes(validSignatures.Max(signatureList => signatureList.Value[0].Length));
+            var headerBytes = reader.ReadBytes(validSignatures.Max(a => a.Value[0].Length));
 
             return validSignatures.Any(signatureList =>
                 signatureList.Value.Any(signature => headerBytes.Take(signature.Length).SequenceEqual(signature)));
         }
 
-        private Dictionary<string, List<string>> GetAllowedExtensions(string validationType)
+        private static Dictionary<string, List<string>> GetAllowedExtensions(string validationType)
         {
             var allowedExtensions = new Dictionary<string, List<string>>
             {
@@ -61,10 +62,12 @@ namespace Market.Filters;
                 { "video", new List<string> { ".mp4", ".mov" } }
             };
 
-            return allowedExtensions.TryGetValue(validationType, out var extensions) ? new Dictionary<string, List<string>> { { validationType, extensions } } : new Dictionary<string, List<string>>();
+            return allowedExtensions.TryGetValue(validationType, out var extensions) 
+                ? new Dictionary<string, List<string>> { { validationType, extensions } } 
+                : new Dictionary<string, List<string>>();
         }
 
-        private Dictionary<string, List<byte[]>> GetValidSignatures(string validationType)
+        private static Dictionary<string, List<byte[]>> GetValidSignatures(string validationType)
         {
             var validSignatures = new Dictionary<string, List<byte[]>>
             {
@@ -73,7 +76,7 @@ namespace Market.Filters;
                     {
                         new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }, // JPEG
                         new byte[] { 0x89, 0x50, 0x4E, 0x47 }, // PNG
-                        new byte[] { 0x25, 0x50, 0x44, 0x46 }  // PDF
+                        "%PDF"u8.ToArray()  // PDF
                     }
                 },
                 {
@@ -85,7 +88,9 @@ namespace Market.Filters;
                 }
             };
 
-            return validSignatures.TryGetValue(validationType, out var signatures) ? new Dictionary<string, List<byte[]>> { { validationType, signatures } } : new Dictionary<string, List<byte[]>>();
+            return validSignatures.TryGetValue(validationType, out var signatures) 
+                ? new Dictionary<string, List<byte[]>> { { validationType, signatures } } 
+                : new Dictionary<string, List<byte[]>>();
         }
     }
 

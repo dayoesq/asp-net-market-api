@@ -19,7 +19,7 @@ builder.Services.AddControllers(options =>
     options.Filters.Add(typeof(BadRequestFilter));
 });
 
-builder.Services.AddScoped<ValidateImageAndVideoFileAttribute>(); // Add the custom attribute
+builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>(); // Add the custom attribute
 
 //ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 

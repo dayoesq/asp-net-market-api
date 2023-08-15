@@ -42,7 +42,7 @@ namespace Market.Controllers;
             }
 
             var user = _mapper.Map<ApplicationUser>(register);
-            user.UserName = register.Email; // Set the UserName to be the same as Email
+            user.UserName = register.Email;
 
             var result = await _userManager.CreateAsync(user, register.Password);
 
@@ -51,10 +51,9 @@ namespace Market.Controllers;
                 return BadRequest(result.Errors);
             }
 
-            var verificationCode = StringGenerator.GenerateRandomNumber(8);
+            var verificationCode = Helper.GenerateRandomNumber(8);
             user.VerificationCode = verificationCode;
-
-            // Save the user to the database
+            
             var saveResult = await _userManager.UpdateAsync(user);
 
             if (!saveResult.Succeeded)
@@ -84,10 +83,12 @@ namespace Market.Controllers;
                 return Unauthorized(new { message = "Invalid credentials." });
             }
 
+            if (!user.EmailConfirmed)
+            {
+                return Unauthorized(new { message = "Not verified." });
+            }
+            
             await _signInManager.SignInAsync(user, false);
-
-            // There should be a check for user verified status.
-
             var token = GenerateJwtToken(user);
 
             return Ok(new { token, expiration = _configuration.GetValue<int>("JWT:ExpirationInMonths") });
