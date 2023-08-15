@@ -1,11 +1,12 @@
-namespace Market.Models;
+namespace Market.Models.DTOS;
 
-public class Product
+public class ProductDto
 {
     public string Name { get; set; }
     public string Brand { get; set; }
     public decimal Price { get; set; }
-    public string? Description { get; set; }
+    public string Description { get; set; }
     public string? Identification { get; set; }
-    public List<Image> Images { get; set; }
+    public List<IFormFile> Images { get; set; }
+    
 }

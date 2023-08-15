@@ -10,5 +10,6 @@ public class AutoMapperProfiles : Profile
     {
         CreateMap<RegisterDto, ApplicationUser>()
         .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+        CreateMap<ProductDto, Product>().ReverseMap();
     }
 }
