@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "lzbwvfxnEvVRazHR0Ru0P6nU7Cw/fXp+CDrLZL3yY9kugD5IGqWU95iw7i9qHzzaXvv46+EIL4J8dg7jc8q4Xw==",
+  "dgSpecHash": "3xh5yoV0XfxukZ8QfgCY0XOieZdv1zMQgX8P6vwl3pnS3LabJleY93txDfO8mJl25eSYCFDB6PRSNW07jLbCAg==",
   "success": true,
   "projectFilePath": "/Volumes/MacExtended/Projects/dotnet/Market/Market.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,8 @@
     "/Users/dayo/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "/Users/dayo/.nuget/packages/azure.core/1.24.0/azure.core.1.24.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/azure.identity/1.6.0/azure.identity.1.6.0.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/fluentemail.core/3.0.2/fluentemail.core.3.0.2.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/fluentemail.mailgun/3.0.2/fluentemail.mailgun.3.0.2.nupkg.sha512",
     "/Users/dayo/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/7.0.9/microsoft.aspnetcore.authentication.jwtbearer.7.0.9.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.cryptography.internal/7.0.9/microsoft.aspnetcore.cryptography.internal.7.0.9.nupkg.sha512",
@@ -53,6 +55,7 @@
     "/Users/dayo/.nuget/packages/microsoft.win32.registry/5.0.0/microsoft.win32.registry.5.0.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.win32.systemevents/7.0.0/microsoft.win32.systemevents.7.0.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/mono.texttemplating/2.2.1/mono.texttemplating.2.2.1.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/newtonsoft.json/12.0.3/newtonsoft.json.12.0.3.nupkg.sha512",
     "/Users/dayo/.nuget/packages/swashbuckle.aspnetcore/6.5.0/swashbuckle.aspnetcore.6.5.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/swashbuckle.aspnetcore.swagger/6.5.0/swashbuckle.aspnetcore.swagger.6.5.0.nupkg.sha512",
     "/Users/dayo/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.5.0/swashbuckle.aspnetcore.swaggergen.6.5.0.nupkg.sha512",

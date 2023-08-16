@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Market.ApiBehaviours;
 
-public class GlobalPrefix : IApplicationModelConvention
+public class ControllerGlobalPrefix : IApplicationModelConvention
 {
     public void Apply(ApplicationModel application)
     {

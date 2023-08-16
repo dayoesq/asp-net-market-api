@@ -7,6 +7,6 @@ public class ProductDto
     public decimal Price { get; set; }
     public string Description { get; set; }
     public string? Identification { get; set; }
-    public List<IFormFile> Images { get; set; }
+    public ICollection<ProductImage> Images { get; set; }
     
 }

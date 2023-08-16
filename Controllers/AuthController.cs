@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AutoMapper;
+using Market.DataContext;
 using Market.Models;
 using Market.Models.DTOS;
 using Market.Utils;
@@ -20,31 +21,34 @@ namespace Market.Controllers;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly ApplicationDbContext _context;
+        
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IConfiguration configuration, IMapper mapper)
+            IConfiguration configuration, IMapper mapper, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _mapper = mapper;
+            _context = context;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto register)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var userExists = await _userManager.FindByEmailAsync(register.Email);
-            if (userExists != null)
+            var user = await _userManager.FindByEmailAsync(registerDto.Email);
+            if (user != null)
             {
-                return Conflict(new { message = "User with the provided email already exists." });
+                return Conflict(new { message = "User with the provided credentials already exists" });
             }
 
-            var user = _mapper.Map<ApplicationUser>(register);
-            user.UserName = register.Email;
+            user = _mapper.Map<ApplicationUser>(registerDto);
+            user.UserName = registerDto.Email;
 
-            var result = await _userManager.CreateAsync(user, register.Password);
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
 
             if (!result.Succeeded)
             {
@@ -53,25 +57,21 @@ namespace Market.Controllers;
 
             var verificationCode = Helper.GenerateRandomNumber(8);
             user.VerificationCode = verificationCode;
-            
-            var saveResult = await _userManager.UpdateAsync(user);
 
-            if (!saveResult.Succeeded)
-            {
-                return BadRequest(saveResult.Errors);
-            }
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
 
             // Send the verification email
             //await _emailService.SendVerificationEmail(user.Email, verificationCode);
 
-            var responseDto = new ResponseDto
+            var response = new SuccessResponseDto
             {
-                Message = "Registration successful. A verification code has been sent to your email."
+                Message = "Registration successful"
             };
 
-            return Created("api/auth/register", responseDto);
+            return Created("api/auth/register", response);
         }
-
+        
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto auth)
@@ -122,16 +122,21 @@ namespace Market.Controllers;
 
         private string GenerateJwtToken(ApplicationUser user)
         {
+            if (user.Email == null)
+            {
+                throw new ArgumentNullException(nameof(user.Email), "User email is required to generate a JWT token");
+            }
+
             var jwtConfig = _configuration.GetSection("JWT");
             var secret = jwtConfig.GetValue<string>("Secret");
             var issuer = jwtConfig.GetValue<string>("Issuer");
             var audience = jwtConfig.GetValue<string>("Audience");
-            var expirationInMinutes = jwtConfig.GetValue<int>("ExpirationInMonths");
+            var expirationInMonths = jwtConfig.GetValue<int>("ExpirationInMonths");
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.UserName!) // Add UserName to claims
+                new(ClaimTypes.Email, user.Email),
+                new(ClaimTypes.Name, user.UserName!) // Add UserName to claims
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!));
@@ -139,7 +144,7 @@ namespace Market.Controllers;
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMonths(expirationInMinutes),
+                Expires = DateTime.UtcNow.AddMonths(expirationInMonths),
                 Issuer = issuer,
                 Audience = audience,
                 SigningCredentials = credentials
@@ -150,5 +155,6 @@ namespace Market.Controllers;
 
             return tokenHandler.WriteToken(token);
         }
+
     }
 

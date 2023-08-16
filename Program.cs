@@ -19,13 +19,13 @@ builder.Services.AddControllers(options =>
     options.Filters.Add(typeof(BadRequestFilter));
 });
 
-builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>(); // Add the custom attribute
+builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
 
 //ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 
 builder.Services.AddMvc(options =>
 {
-    options.Conventions.Add(new GlobalPrefix());
+    options.Conventions.Add(new ControllerGlobalPrefix());
 });
 
 
@@ -34,7 +34,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddCors(options =>
 {
-    var clientBaseUrl = builder.Configuration.GetValue<string>("clientBaseUrl");
+    var clientBaseUrl = builder.Configuration.GetValue<string>("ClientBaseUrl");
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(clientBaseUrl!).AllowAnyMethod().AllowAnyHeader();
