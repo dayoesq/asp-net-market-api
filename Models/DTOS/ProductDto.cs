@@ -8,7 +8,7 @@ public class ProductDto : BaseEntity
     public string Brand { get; set; }
     public decimal Price { get; set; }
     public string Description { get; set; }
-    public string? Identification { get; set; }
+    public string Identification { get; set; }
     public ICollection<ProductImage> Images { get; set; }
     public ICollection<Category> Categories { get; set; }
     public int DiscountId { get; set; }

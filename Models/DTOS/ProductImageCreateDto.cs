@@ -7,11 +7,11 @@ public class ProductImageCreateDto
 {
     [Required]
     [MaxLength(150)]
-    public string? Name { get; set; }
+    public string Name { get; set; }
     [Required]
-    public string? Path { get; set; }
+    public string Path { get; set; }
     public int ProductId { get; set; }
     [ForeignKey(nameof(ProductId))]
-    public Product? Product { get; init; }
+    public Product Product { get; init; }
    
 }

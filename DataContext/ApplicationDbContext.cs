@@ -10,13 +10,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 
     }
+    
 
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductImage> ProductsImages { get; set; }
     public DbSet<Discount> Discounts { get; set; }
-    
     public override DbSet<ApplicationUser> Users { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Product>()
+                .HasMany(p => p.Images)
+                .WithOne(p => p.Product)
+                .HasForeignKey(p => p.ProductId);
+            
+        }
+    
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         var currentTime = DateTime.UtcNow;

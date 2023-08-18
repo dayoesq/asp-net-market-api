@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +8,19 @@ namespace Market.Models;
 [Index(nameof(Email), IsUnique = true)]
 public class ApplicationUser : IdentityUser
 {
+    [Required]
+    [MaxLength(25)]
+    [MinLength(2)]
     public string FirstName { get; set; }
+    
+    [Required]
+    [MaxLength(25)]
+    [MinLength(2)]
     public string LastName { get; set; }
+    
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; }

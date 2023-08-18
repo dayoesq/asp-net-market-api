@@ -29,6 +29,6 @@ public class Product : BaseEntity
     public Size? Size { get; set; }
     public int ColorId { get; set; }
     [ForeignKey(nameof(ColorId))]
-    public Color? Color { get; set; }
+    public Color Color { get; set; }
    
 }

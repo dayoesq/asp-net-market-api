@@ -16,6 +16,6 @@ public class ProductImage : BaseEntity
     public int Size { get; set; }
     public int ProductId { get; set; }
     [ForeignKey(nameof(ProductId))]
-    public Product? Product { get; init; }
+    public Product Product { get; init; }
     
 }
