@@ -13,6 +13,5 @@ public class ProductImageCreateDto
     public int ProductId { get; set; }
     [ForeignKey(nameof(ProductId))]
     public Product? Product { get; init; }
-    public DateTime? CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+   
 }

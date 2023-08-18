@@ -19,8 +19,10 @@ public static class Helper
     public static string ToTitleCase(string input)
     {
         if (string.IsNullOrEmpty(input))
+        {
             return input;
-
+        }
+        
         var words = input.ToLower().Split(' ');
         for (var i = 0; i < words.Length; i++)
         {
@@ -28,5 +30,10 @@ public static class Helper
                 words[i] = char.ToUpper(words[i][0]) + words[i][1..];
         }
         return string.Join(" ", words);
+    }
+    
+    public static string ToUpper(string input)
+    {
+        return string.IsNullOrEmpty(input) ? input : input.ToUpper();
     }
 }

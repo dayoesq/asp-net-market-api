@@ -177,3 +177,7 @@
 /Volumes/MacExtended/Projects/dotnet/Market/obj/Debug/net7.0/Market.pdb
 /Volumes/MacExtended/Projects/dotnet/Market/obj/Debug/net7.0/Market.genruntimeconfig.cache
 /Volumes/MacExtended/Projects/dotnet/Market/obj/Debug/net7.0/ref/Market.dll
+/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/Market.staticwebassets.runtime.json
+/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/FluentEmail.Core.dll
+/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/FluentEmail.Mailgun.dll
+/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/Newtonsoft.Json.dll

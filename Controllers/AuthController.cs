@@ -47,6 +47,9 @@ namespace Market.Controllers;
 
             user = _mapper.Map<ApplicationUser>(registerDto);
             user.UserName = registerDto.Email;
+            user.VerificationCode = Helper.GenerateRandomNumber(8);
+            user.IsVerified = false;
+            user.EmailConfirmed = false;
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
@@ -54,10 +57,7 @@ namespace Market.Controllers;
             {
                 return BadRequest(result.Errors);
             }
-
-            var verificationCode = Helper.GenerateRandomNumber(8);
-            user.VerificationCode = verificationCode;
-
+            
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 

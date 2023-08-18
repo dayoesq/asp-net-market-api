@@ -1,5 +1,6 @@
 using AutoMapper;
 using Market.DataContext;
+using Market.Models.DTOS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +25,8 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Get()
     {
         var users = await _context.Users.ToListAsync();
-        return _mapper.Map<IActionResult>(users);
-        
+        var userDtos = _mapper.Map<List<UserDto>>(users);
+        return Ok(userDtos);
     }
     
     [Authorize]
