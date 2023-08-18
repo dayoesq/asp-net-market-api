@@ -10,30 +10,69 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 
     }
+    
 
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Product> Products { get; set; }
+    public DbSet<ProductImage> ProductsImages { get; set; }
+    public DbSet<Discount> Discounts { get; set; }
     public override DbSet<ApplicationUser> Users { get; set; }
-    public  DbSet<Product> Products { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Product>()
+                .HasMany(p => p.Images)
+                .WithOne(p => p.Product)
+                .HasForeignKey(p => p.ProductId);
+            
+        }
     
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
+        var currentTime = DateTime.UtcNow;
+
         var entities = ChangeTracker.Entries()
             .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
 
         foreach (var entity in entities)
         {
-            if (entity.State == EntityState.Added)
+            if (entity.Entity is BaseEntity baseEntity)
             {
-                // Set "CreatedAt" to the current date on new records.
-                entity.Property("CreatedAt").CurrentValue = DateTime.UtcNow;
-            }
-                // Set "DeletedAt" to the current date whenever a record is deleted.
-            if (entity.State == EntityState.Deleted)
-            {
-                entity.Property("DeletedAt").CurrentValue = DateTime.UtcNow;
-            }
+                switch (entity.State)
+                {
+                    case EntityState.Added:
+                        baseEntity.CreatedAt = currentTime;
+                        break;
+                    case EntityState.Deleted:
+                        baseEntity.DeletedAt = currentTime;
+                        entity.State = EntityState.Modified;
+                        break;
+                    case EntityState.Detached:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
 
-            // Set "UpdatedAt" to the current date whenever any fields change.
-            entity.Property("UpdatedAt").CurrentValue = DateTime.UtcNow;
+                baseEntity.UpdatedAt = currentTime;
+            }
+            else
+            {
+                switch (entity.State)
+                {
+                    case EntityState.Added:
+                        entity.Property("CreatedAt").CurrentValue = currentTime;
+                        break;
+                    case EntityState.Deleted:
+                        entity.Property("DeletedAt").CurrentValue = currentTime;
+                        entity.State = EntityState.Modified;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                entity.Property("UpdatedAt").CurrentValue = currentTime;
+            }
         }
 
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);

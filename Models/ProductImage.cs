@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Market.Models;
 
-public class ProductImage
+public class ProductImage : BaseEntity
 {
     public int Id { get; set; }
     [Required]
@@ -16,8 +16,6 @@ public class ProductImage
     public int Size { get; set; }
     public int ProductId { get; set; }
     [ForeignKey(nameof(ProductId))]
-    public Product? Product { get; init; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Product Product { get; init; }
     
 }

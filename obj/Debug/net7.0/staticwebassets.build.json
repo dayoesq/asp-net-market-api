@@ -1,11 +1,19 @@
 {
   "Version": 1,
-  "Hash": "1nwE7/9bzaJr4UNd0ZEDbKvymyeR0b12b+KZ1RW5R94=",
+  "Hash": "pBLGfKE9B8z1qBAN3vj0JW8+WGRPx/DSG6GfXgfzt4E=",
   "Source": "Market",
   "BasePath": "_content/Market",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Market/wwwroot",
+      "Source": "Market",
+      "ContentRoot": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/",
+      "BasePath": "_content/Market",
+      "Pattern": "**"
+    }
+  ],
   "Assets": []
 }
