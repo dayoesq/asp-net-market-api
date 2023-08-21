@@ -17,10 +17,6 @@ public class ApplicationUser : IdentityUser
     [MaxLength(25)]
     [MinLength(2)]
     public string LastName { get; set; }
-    
-    [Required]
-    [EmailAddress]
-    public string Email { get; set; }
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; }
