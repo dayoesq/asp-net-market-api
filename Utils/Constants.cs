@@ -9,5 +9,8 @@ public static class Constants
     public const string ADMIN = "ADMIN";
     public const string VENDOR = "VENDOR";
     public const string SUPER = "SUPER";
+    
+    // Regex patterns
+    public const string NAME_PATTERN = "^[a-zA-Z]+(?:[-_][a-zA-Z]+)*$";
 
 }

@@ -7,6 +7,7 @@ public class RegisterDto
 {
     private string _firstName;
     private string _lastName;
+    private string _email;
     
     [Required]
     [MaxLength(25)]
@@ -28,7 +29,11 @@ public class RegisterDto
 
     [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    public string Email
+    {
+        get => _email;
+        set => _email = value.ToLower();
+    }
 
     [Required]
     [MaxLength(60)]

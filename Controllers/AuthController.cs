@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using Market.DataContext;
 using Market.Models;
@@ -39,17 +40,16 @@ namespace Market.Controllers;
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var user = await _userManager.FindByEmailAsync(registerDto.Email);
-            if (user != null)
+        
+            if (!Regex.IsMatch(registerDto.FirstName, Constants.NAME_PATTERN) && !Regex.IsMatch(registerDto.LastName, Constants.NAME_PATTERN))
             {
-                return Conflict(new { message = "User with the provided credentials already exists" });
+                return BadRequest("Invalid name format");
             }
-
-            user = _mapper.Map<ApplicationUser>(registerDto);
-            user.UserName = registerDto.Email;
+            var user = _mapper.Map<ApplicationUser>(registerDto);
             user.VerificationCode = Helper.GenerateRandomNumber(8);
             user.IsVerified = false;
             user.EmailConfirmed = false;
+            user.NormalizedEmail = registerDto.Email.ToUpper();
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
@@ -58,7 +58,6 @@ namespace Market.Controllers;
                 return BadRequest(result.Errors);
             }
             
-            await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
             // Send the verification email
@@ -136,7 +135,7 @@ namespace Market.Controllers;
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Name, user.UserName!) // Add UserName to claims
+                new(ClaimTypes.Name, user.UserName!)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!));
