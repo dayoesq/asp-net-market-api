@@ -15,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers(options =>
 {
+    options.Filters.Add(typeof(TrimRequestStringsAttribute));
     options.Filters.Add(typeof(ExceptionFilter));
     options.Filters.Add(typeof(BadRequestFilter));
 });
