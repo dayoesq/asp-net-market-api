@@ -49,7 +49,6 @@ namespace Market.Controllers;
             user.VerificationCode = Helper.GenerateRandomNumber(8);
             user.IsVerified = false;
             user.EmailConfirmed = false;
-            user.NormalizedEmail = registerDto.Email.ToUpper();
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
 
@@ -62,13 +61,11 @@ namespace Market.Controllers;
 
             // Send the verification email
             //await _emailService.SendVerificationEmail(user.Email, verificationCode);
-
-            var response = new SuccessResponseDto
+            
+            return Created("api/auth/register", new SuccessResponseDto
             {
                 Message = "Registration successful"
-            };
-
-            return Created("api/auth/register", response);
+            });
         }
         
 
