@@ -21,17 +21,12 @@ public class ApplicationUser : IdentityUser
     public string? City { get; set; }
     public string? Country { get; set; }
     public string? PostalCode { get; set; }
-    public int? LoginCount { get; set; }
-    public ActivityStatus ActivityStatus { get; set; } = ActivityStatus.InActive;
     public bool? IsVerified { get; set; }
     public string? VerificationCode { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiration { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
-}
-
-public enum ActivityStatus
-{
-    Active = 1,
-    InActive = 0
+    public DateTime? LastLogin { get; set; }
 }
