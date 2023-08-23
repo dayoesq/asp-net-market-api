@@ -10,6 +10,7 @@ using Market.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Market.Controllers;
@@ -76,18 +77,20 @@ namespace Market.Controllers;
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
             {
-                return Unauthorized(new { message = "Invalid credentials." });
+                return Unauthorized(new { message = "Invalid credentials" });
             }
-
+            
             if (!user.EmailConfirmed)
             {
-                return Unauthorized(new { message = "Not verified." });
+                return Unauthorized(new { message = "User not verified" });
             }
             
             await _signInManager.SignInAsync(user, false);
             var token = GenerateJwtToken(user);
+            user.LastLogin = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
 
-            return Ok(new { token, expiration = _configuration.GetValue<int>("JWT:ExpirationInMonths") });
+            return Ok(new { token, expiration = _configuration.GetValue<int>("JWT:ExpirationInMinutes") });
         }
 
         [HttpPost("assign-role")]
@@ -98,7 +101,7 @@ namespace Market.Controllers;
 
             if (user == null)
             {
-                return NotFound(new { message = "User not found." });
+                return NotFound(new { message = "User not found" });
             }
 
             var existingRoles = await _userManager.GetRolesAsync(user);
@@ -113,8 +116,92 @@ namespace Market.Controllers;
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            return Ok(new { message = "Roles assigned successfully.", roles });
+            return Ok(new { message = "Roles assigned successfully", roles });
         }
+
+        [HttpGet("verify-account")]
+        public async Task<IActionResult> VerifyAccount([FromQuery(Name = "verificationCode")] string verificationCode)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(a => a.VerificationCode == verificationCode);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return BadRequest(new { message = "Account is already verified" });
+            }
+
+            if (user.VerificationCode != verificationCode)
+            {
+                return BadRequest(new { message = "Invalid verification code" });
+            }
+
+            user.EmailConfirmed = true;
+            user.IsVerified = true;
+            user.VerificationCode = null;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded ? Ok(new { message = "Account verified successfully" }) :
+                StatusCode(500, new { message = "Internal server error" });
+        }
+
+        [HttpPost("request-to-change-password")]
+        public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequestDto passwordResetRequestDto)
+        {
+            var user = await _userManager.FindByEmailAsync(passwordResetRequestDto.Email);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+            
+            if ((bool)(!user.IsVerified)!)
+            {
+                return BadRequest(new { message = "Unverified user" });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            user.PasswordResetToken = token;
+            user.PasswordResetTokenExpiration = DateTime.UtcNow.AddHours(24);
+            await _context.SaveChangesAsync();
+        
+            return Ok(new { message = "Password reset link sent" });
+            
+        }
+        
+        [HttpPost("password-reset")]
+        public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto passwordResetDto)
+        {
+            
+            var user = await _context.Users.FirstOrDefaultAsync(a => a.PasswordResetToken == passwordResetDto.PasswordResetToken);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            
+            if (user.PasswordResetTokenExpiration == null || !(user.PasswordResetTokenExpiration > DateTime.UtcNow))
+            {
+                return NotFound();
+            }
+            
+            var result = await _userManager.ResetPasswordAsync(user, passwordResetDto.PasswordResetToken, passwordResetDto.Password);
+            
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { message = "Password reset failed" });
+            }
+
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpiration = null;
+            await _context.SaveChangesAsync();
+            
+            return Ok();
+        }
+
+
 
         private string GenerateJwtToken(ApplicationUser user)
         {
@@ -127,12 +214,11 @@ namespace Market.Controllers;
             var secret = jwtConfig.GetValue<string>("Secret");
             var issuer = jwtConfig.GetValue<string>("Issuer");
             var audience = jwtConfig.GetValue<string>("Audience");
-            var expirationInMonths = jwtConfig.GetValue<int>("ExpirationInMonths");
+            var expirationInMinutes = jwtConfig.GetValue<int>("ExpirationInMinutes");
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Name, user.UserName!)
+                new(ClaimTypes.Email, user.Email)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!));
@@ -140,7 +226,7 @@ namespace Market.Controllers;
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMonths(expirationInMonths),
+                Expires = DateTime.UtcNow.AddMinutes(expirationInMinutes),
                 Issuer = issuer,
                 Audience = audience,
                 SigningCredentials = credentials

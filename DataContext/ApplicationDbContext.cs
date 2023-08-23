@@ -48,7 +48,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                         baseEntity.DeletedAt = currentTime;
                         entity.State = EntityState.Modified;
                         break;
-                    case EntityState.Detached:
+                    case EntityState.Detached: 
+                        break;
+                    case EntityState.Unchanged:
+                        break;
+                    case EntityState.Modified: 
+                        baseEntity.UpdatedAt = currentTime;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -66,6 +71,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                     case EntityState.Deleted:
                         entity.Property("DeletedAt").CurrentValue = currentTime;
                         entity.State = EntityState.Modified;
+                        break;
+                    case EntityState.Detached:
+                    case EntityState.Unchanged:
+                        break;
+                    case EntityState.Modified:
+                        entity.Property("UpdatedAt").CurrentValue = currentTime;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
