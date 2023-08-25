@@ -21,6 +21,7 @@ namespace Market.Controllers;
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
@@ -29,13 +30,16 @@ namespace Market.Controllers;
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IConfiguration configuration, IMapper mapper, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _configuration = configuration;
             _mapper = mapper;
             _context = context;
+            
         }
 
         [HttpPost("register")]
@@ -63,7 +67,7 @@ namespace Market.Controllers;
             // Send the verification email
             //await _emailService.SendVerificationEmail(user.Email, verificationCode);
             
-            return Created("api/auth/register", new SuccessResponseDto
+            return Created(nameof(Register), new SuccessResponseDto
             {
                 Message = "Registration successful"
             });
@@ -92,12 +96,40 @@ namespace Market.Controllers;
 
             return Ok(new { token, expiration = _configuration.GetValue<int>("JWT:ExpirationInMinutes") });
         }
+        
+        
+        [HttpPost("create-role")]
+        [Authorize(Roles = "admin, super")]
+        public async Task<IActionResult> CreateRole([FromBody] string roleName)
+        {
+            var role = roleName.ToLower();
+            var roleExists = await _roleManager.RoleExistsAsync(role);
+
+            if (roleExists)
+            {
+                return Conflict(new { message = "Role already exists" });
+            }
+
+            var roleToAdd = new IdentityRole(roleName);
+            var result = await _roleManager.CreateAsync(roleToAdd);
+
+            if (result.Succeeded)
+            {
+                return Created(nameof(CreateRole), new SuccessResponseDto
+                {
+                    Message = "Role created successfully"
+                });
+            }
+            return BadRequest(new { message = "Role creation failed"});
+        }
+
 
         [HttpPost("assign-role")]
         [Authorize(Roles = "admin, super")]
         public async Task<IActionResult> AssignRoleToUser([FromBody] RoleAssignmentDto model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var roleModel = model.Email.ToLower();
+            var user = await _userManager.FindByEmailAsync(roleModel);
 
             if (user == null)
             {
@@ -111,7 +143,7 @@ namespace Market.Controllers;
 
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors);
+                return StatusCode(500, new { message = "Failed to assign role"});
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -200,9 +232,7 @@ namespace Market.Controllers;
             
             return Ok();
         }
-
-
-
+        
         private string GenerateJwtToken(ApplicationUser user)
         {
             if (user.Email == null)

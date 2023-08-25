@@ -41,10 +41,15 @@ namespace Market.Filters;
             var fileSize = file.Length;
 
             if (fileSize < minFileSize || fileSize > maxFileSize)
+            {
                 return false;
+            }
+               
 
             if (!allowedExtensions.ContainsKey(extension))
+            {
                 return false;
+            }
 
             using var stream = file.OpenReadStream();
             using var reader = new BinaryReader(stream);

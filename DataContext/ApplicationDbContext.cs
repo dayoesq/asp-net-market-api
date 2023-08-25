@@ -61,7 +61,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
                 baseEntity.UpdatedAt = currentTime;
             }
-            else
+            else if(entity.Entity is ApplicationUser)
             {
                 switch (entity.State)
                 {
