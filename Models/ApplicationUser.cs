@@ -27,6 +27,5 @@ public class ApplicationUser : IdentityUser
     public DateTime? PasswordResetTokenExpiration { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public DateTime? DeletedAt { get; set; }
     public DateTime? LastLogin { get; set; }
 }

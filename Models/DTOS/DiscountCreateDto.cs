@@ -6,8 +6,6 @@ namespace Market.Models.DTOS;
 public class DiscountCreateDto
 {
     
-    public int Id { get; set; }
-    
     [Required]
     [MinLength(4)]
     [MaxLength(8)]

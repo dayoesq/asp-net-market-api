@@ -24,10 +24,10 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.VerificationCode, opt => opt.MapFrom(src => src.VerificationCode))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-            .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
             .ReverseMap(); 
         CreateMap<DiscountCreateDto, Discount>().ReverseMap();
         CreateMap<ProductImageCreateDto, ProductImage>().ReverseMap();
         CreateMap<CategoryCreateDto, Category>().ReverseMap();
+        CreateMap<Discount, DiscountDto>().ReverseMap();
     }
 }
