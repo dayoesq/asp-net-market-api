@@ -25,7 +25,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasMany(p => p.Images)
                 .WithOne(p => p.Product)
                 .HasForeignKey(p => p.ProductId);
-            
+
         }
     
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
@@ -33,7 +33,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         var currentTime = DateTime.UtcNow;
 
         var entities = ChangeTracker.Entries()
-            .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
+            .Where(e => e.State is EntityState.Added or EntityState.Modified);
 
         foreach (var entity in entities)
         {
@@ -43,10 +43,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 {
                     case EntityState.Added:
                         baseEntity.CreatedAt = currentTime;
-                        break;
-                    case EntityState.Deleted:
-                        baseEntity.DeletedAt = currentTime;
-                        entity.State = EntityState.Modified;
                         break;
                     case EntityState.Detached: 
                         break;
@@ -67,10 +63,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 {
                     case EntityState.Added:
                         entity.Property("CreatedAt").CurrentValue = currentTime;
-                        break;
-                    case EntityState.Deleted:
-                        entity.Property("DeletedAt").CurrentValue = currentTime;
-                        entity.State = EntityState.Modified;
                         break;
                     case EntityState.Detached:
                     case EntityState.Unchanged:

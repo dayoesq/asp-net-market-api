@@ -1,9 +1,11 @@
 using System.Text;
+using AspNetCoreRateLimit;
 using Market.ApiBehaviours;
 using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
+using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -57,10 +59,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 });
 
-// builder.Services.AddAuthorization(options =>
-// {
-//     options.AddPolicy(Constants.ADMIN, policy => policy.RequireClaim("role", "admin"));
-// });
+// Rate limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Constants.ADMIN, policy => policy.RequireClaim("role", "admin"));
+});
 
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -82,6 +93,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+//app.UseIpRateLimiting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

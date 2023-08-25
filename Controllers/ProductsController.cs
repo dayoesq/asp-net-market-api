@@ -60,14 +60,14 @@ public class ProductsController : ControllerBase
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
 
-        return Created("api/Products", product);
+        return Created(nameof(CreateProduct), product);
 
     }
     
     private static string GenerateUniqueFileName(int productId, int index, string? fileExtension)
     {
         var guid = Guid.NewGuid().ToString();
-        var date = DateTime.Now.ToString("yyyyMMddHHmmss");
+        var date = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
         return $"{guid}-{date}-P{productId}-I{index + 1}.{fileExtension}";
     }
 
