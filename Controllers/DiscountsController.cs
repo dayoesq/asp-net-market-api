@@ -23,7 +23,13 @@ public class DiscountsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateDiscount(DiscountCreateDto discountCreateDto)
     {
-        var currentDiscount = _context.Discounts.Where(a => a.Code == discountCreateDto.Code.ToUpper());
+        var existingDiscount = await _context.Discounts.FirstOrDefaultAsync(a => a.Code == discountCreateDto.Code.ToUpper());
+
+        if (existingDiscount != null)
+        {
+            return Conflict();
+        }
+
         var discount = _mapper.Map<Discount>(discountCreateDto);
         _context.Discounts.Add(discount);
         await _context.SaveChangesAsync();
@@ -32,21 +38,21 @@ public class DiscountsController : ControllerBase
 
         return CreatedAtAction(nameof(GetDiscount), new { id = createdDto.Id }, createdDto);
     }
-    
+
     
     [HttpGet(Name = "get-discounts")]
     public async Task<IActionResult> GetDiscounts()
     {
         var discounts = await _context.Discounts.ToListAsync();
-        var model = _mapper.Map<List<DiscountDto>>(discounts);
-        return Ok(model);
+        var discountDtos = _mapper.Map<List<DiscountDto>>(discounts);
+        return Ok(discountDtos);
     }
     
     
     [HttpGet("{id}")]
     public async Task<ActionResult<DiscountDto>> GetDiscount(int id)
     {
-        var discount = await _context.Discounts.Where(a => a.Id == id).FirstOrDefaultAsync();
+        var discount = await _context.Discounts.FirstOrDefaultAsync(a => a.Id == id);
         
         if (discount == null)
         {
@@ -58,16 +64,15 @@ public class DiscountsController : ControllerBase
     
     
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateDiscount(int id, DiscountDto discountDto)
+    public async Task<IActionResult> UpdateDiscount(int id, DiscountUpdateDto discountUpdateDto)
     {
-        var currentDiscount = await _context.Discounts.Where(a => a.Id == id).FirstOrDefaultAsync();
+        var currentDiscount = await _context.Discounts.FirstOrDefaultAsync(a => a.Id == id);
         if (currentDiscount == null)
         {
             return NotFound();
         }
-
-        var discount = _mapper.Map<Discount>(discountDto);
-        _context.Entry(discount).State = EntityState.Modified;
+        
+        _mapper.Map(discountUpdateDto, currentDiscount);
 
         try
         {
@@ -82,15 +87,15 @@ public class DiscountsController : ControllerBase
 
             throw;
         }
-
-        return Ok(discount);
+        
+        return Ok(currentDiscount);
     }
-
+    
     
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteDiscount(int id)
     {
-        var discount = await _context.Discounts.Where(a => a.Id == id).FirstOrDefaultAsync();
+        var discount = await _context.Discounts.FirstOrDefaultAsync(a => a.Id == id);
         if (discount == null)
         {
             return NotFound();
@@ -99,12 +104,12 @@ public class DiscountsController : ControllerBase
         _context.Discounts.Remove(discount);
         await _context.SaveChangesAsync();
 
-        return Ok(); 
+        return Ok(discount); 
     }
     
     private bool DiscountExists(int id)
     {
-        return _context.Discounts.Any(e => e.Id == id);
+        return _context.Discounts.Any(a => a.Id == id);
     }
 
     
