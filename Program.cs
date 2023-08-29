@@ -1,10 +1,10 @@
 using System.Text;
-using AspNetCoreRateLimit;
 using Market.ApiBehaviours;
 using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
+using Market.Services.Jwt;
 using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -13,25 +13,25 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Controller services
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(typeof(TrimRequestStringsAttribute));
-    options.Filters.Add(typeof(ExceptionFilter));
+    options.Filters.Add(typeof(GlobalExceptionFilter));
     options.Filters.Add(typeof(BadRequestFilter));
-});
+}).ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 
 builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
-
-//ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
-
+builder.Services.AddScoped<IJwtService, JwtProvider>();
 builder.Services.AddMvc(options =>
 {
     options.Conventions.Add(new ControllerGlobalPrefix());
 });
 
-
+// Mapper services
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -59,20 +59,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 });
 
-// Rate limiting
-builder.Services.AddMemoryCache();
-builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
-builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
-builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
-builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(Constants.ADMIN, policy => policy.RequireClaim("role", "admin"));
-});
-
+builder.Services.AddAuthorization();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -81,8 +68,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 var app = builder.Build();
 
@@ -93,7 +79,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseIpRateLimiting();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

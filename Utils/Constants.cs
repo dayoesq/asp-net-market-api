@@ -2,6 +2,7 @@ namespace Market.Utils;
 
 public static class Constants
 {
+    
     // Api prefix
     public const string API_PREFIX = "api/v1";
     
@@ -12,5 +13,8 @@ public static class Constants
     
     // Regex patterns
     public const string NAME_PATTERN = "^[a-zA-Z]+(?:[-_][a-zA-Z]+)*$";
+    
+    // Errors
+    //public const string CONFLICT409 = ""
 
 }
