@@ -1,17 +1,13 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using Market.DataContext;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.Services.Jwt;
 using Market.Utils;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Market.Controllers;
 
@@ -48,7 +44,13 @@ namespace Market.Controllers;
         
             if (!Regex.IsMatch(registerDto.FirstName, Constants.NAME_PATTERN) && !Regex.IsMatch(registerDto.LastName, Constants.NAME_PATTERN))
             {
-                return BadRequest("Invalid name format");
+                return BadRequest(new ErrorResponse(Errors.InvalidFormat + " name format"));
+            }
+
+            var currentUser = _userManager.FindByEmailAsync(registerDto.Email);
+            if (currentUser.Result?.Email?.ToUpperInvariant() == registerDto.Email.ToUpperInvariant())
+            {
+                return Conflict(new ErrorResponse(Errors.Conflict409));
             }
             var user = _mapper.Map<ApplicationUser>(registerDto);
             user.VerificationCode = Helper.GenerateRandomNumber(8);
@@ -63,14 +65,8 @@ namespace Market.Controllers;
             }
             
             await _context.SaveChangesAsync();
-
-            // Send the verification email
-            //await _emailService.SendVerificationEmail(user.Email, verificationCode);
             
-            return Created(nameof(Register), new SuccessResponseDto
-            {
-                Message = "Registration successful"
-            });
+            return Created(nameof(Register), registerDto);
         }
         
 
@@ -81,16 +77,16 @@ namespace Market.Controllers;
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
             {
-                return Unauthorized(new { message = "Invalid credentials" });
+                return Unauthorized(new ErrorResponse(Errors.UnAuthorized401));
             }
             
             if (!user.EmailConfirmed)
             {
-                return Unauthorized(new { message = "User not verified" });
+                return Unauthorized(new ErrorResponse(Errors.UnAuthorized401));
             }
             
             await _signInManager.SignInAsync(user, false);
-            var token = GenerateJwtToken(user);
+            var token = new JwtProvider().GenerateToken(user);
             user.LastLogin = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
@@ -99,7 +95,6 @@ namespace Market.Controllers;
         
         
         [HttpPost("create-role")]
-        [Authorize(Roles = "admin, super")]
         public async Task<IActionResult> CreateRole([FromBody] string roleName)
         {
             var role = roleName.ToLower();
@@ -107,25 +102,17 @@ namespace Market.Controllers;
 
             if (roleExists)
             {
-                return Conflict(new { message = "Role already exists" });
+                return Conflict(new ErrorResponse(Errors.Conflict409));
             }
 
             var roleToAdd = new IdentityRole(roleName);
             var result = await _roleManager.CreateAsync(roleToAdd);
 
-            if (result.Succeeded)
-            {
-                return Created(nameof(CreateRole), new SuccessResponseDto
-                {
-                    Message = "Role created successfully"
-                });
-            }
-            return BadRequest(new { message = "Role creation failed"});
+            return result.Succeeded ? Created(nameof(CreateRole), role) : StatusCode(500, new ErrorResponse(Errors.Server500));
         }
 
 
         [HttpPost("assign-role")]
-        [Authorize(Roles = "admin, super")]
         public async Task<IActionResult> AssignRoleToUser([FromBody] RoleAssignmentDto model)
         {
             var roleModel = model.Email.ToLower();
@@ -133,7 +120,7 @@ namespace Market.Controllers;
 
             if (user == null)
             {
-                return NotFound(new { message = "User not found" });
+                return NotFound(new ErrorResponse(Errors.NotFound404));
             }
 
             var existingRoles = await _userManager.GetRolesAsync(user);
@@ -143,12 +130,12 @@ namespace Market.Controllers;
 
             if (!result.Succeeded)
             {
-                return StatusCode(500, new { message = "Failed to assign role"});
+                return StatusCode(500, new ErrorResponse(Errors.Server500));
             }
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            return Ok(new { message = "Roles assigned successfully", roles });
+            return Ok(roles);
         }
 
         [HttpGet("verify-account")]
@@ -158,17 +145,17 @@ namespace Market.Controllers;
 
             if (user == null)
             {
-                return NotFound(new { message = "User not found" });
+                return NotFound(new ErrorResponse(Errors.NotFound404));
             }
 
             if (user.EmailConfirmed)
             {
-                return BadRequest(new { message = "Account is already verified" });
+                return BadRequest(new ErrorResponse(Errors.Repetition));
             }
 
             if (user.VerificationCode != verificationCode)
             {
-                return BadRequest(new { message = "Invalid verification code" });
+                return BadRequest(new ErrorResponse(Errors.InvalidCredentials));
             }
 
             user.EmailConfirmed = true;
@@ -177,8 +164,8 @@ namespace Market.Controllers;
 
             var result = await _userManager.UpdateAsync(user);
 
-            return result.Succeeded ? Ok(new { message = "Account verified successfully" }) :
-                StatusCode(500, new { message = "Internal server error" });
+            return result.Succeeded ? Ok() :
+                StatusCode(500, new ErrorResponse(Errors.Server500));
         }
 
         [HttpPost("request-to-change-password")]
@@ -187,12 +174,12 @@ namespace Market.Controllers;
             var user = await _userManager.FindByEmailAsync(passwordResetRequestDto.Email);
             if (user == null)
             {
-                return NotFound(new { message = "User not found" });
+                return NotFound(new ErrorResponse(Errors.NotFound404));
             }
             
             if ((bool)(!user.IsVerified)!)
             {
-                return BadRequest(new { message = "Unverified user" });
+                return Unauthorized(new ErrorResponse(Errors.UnAuthorized401));
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -200,7 +187,7 @@ namespace Market.Controllers;
             user.PasswordResetTokenExpiration = DateTime.UtcNow.AddHours(24);
             await _context.SaveChangesAsync();
         
-            return Ok(new { message = "Password reset link sent" });
+            return Ok();
             
         }
         
@@ -223,7 +210,7 @@ namespace Market.Controllers;
             
             if (!result.Succeeded)
             {
-                return BadRequest(new { message = "Password reset failed" });
+                return StatusCode(500, new ErrorResponse(Errors.Server500));
             }
 
             user.PasswordResetToken = null;
@@ -233,40 +220,6 @@ namespace Market.Controllers;
             return Ok();
         }
         
-        private string GenerateJwtToken(ApplicationUser user)
-        {
-            if (user.Email == null)
-            {
-                throw new ArgumentNullException(nameof(user.Email), "User email is required to generate a JWT token");
-            }
-
-            var jwtConfig = _configuration.GetSection("JWT");
-            var secret = jwtConfig.GetValue<string>("Secret");
-            var issuer = jwtConfig.GetValue<string>("Issuer");
-            var audience = jwtConfig.GetValue<string>("Audience");
-            var expirationInMinutes = jwtConfig.GetValue<int>("ExpirationInMinutes");
-
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.Email, user.Email)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(expirationInMinutes),
-                Issuer = issuer,
-                Audience = audience,
-                SigningCredentials = credentials
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
-        }
-
+        
     }
 

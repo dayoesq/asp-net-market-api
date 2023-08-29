@@ -1,28 +1,29 @@
 using AutoMapper;
 using Market.DataContext;
+using Market.Models;
 using Market.Models.DTOS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Market.Controllers;
-[Route("[controller]")]
+
 [ApiController]
+[Route("[controller]")]
 public class UsersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-    private readonly Mapper _mapper;
+    private readonly IMapper _mapper;
     
-    public UsersController(ApplicationDbContext context, Mapper mapper)
+    public UsersController(ApplicationDbContext context, IMapper mapper)
     {
         _context = context;
         _mapper = mapper;
     }
     
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = Constants.ADMIN)]
-    [Authorize(Roles = "admin, super")]
-    [HttpGet(Name = "GetAllUsers")]
-    public async Task<IActionResult> Get()
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetUsers()
     {
         var users = await _context.Users.ToListAsync();
         var userDtos = _mapper.Map<List<UserDto>>(users);
@@ -30,10 +31,14 @@ public class UsersController : ControllerBase
     }
     
     [Authorize]
-    [HttpGet("{Id}", Name = "GetUser")]
-    public async Task<IActionResult> Get(string id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUserById(string id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        return user == null ? NotFound() : _mapper.Map<IActionResult>(user);
+        if (user == null) return NotFound();
+        var userDto = _mapper.Map<UserDto>(user);
+            
+        return Ok(userDto);
+
     }
 }

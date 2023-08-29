@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using AutoMapper;
 using Market.DataContext;
 using Market.Filters;
@@ -26,7 +27,8 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> GetProducts()
     {
         var products = await _context.Products.ToListAsync();
-        return Ok(products);
+        var productDtos = _mapper.Map<List<ProductDto>>(products);
+        return Ok(productDtos);
     }
     
     [HttpPost(Name = "create-product")]
