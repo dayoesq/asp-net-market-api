@@ -16,6 +16,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductImage> ProductsImages { get; set; }
     public DbSet<Discount> Discounts { get; set; }
+    public DbSet<Color> Colors { get; set; }
+    public DbSet<Size> Sizes { get; set; }
     public override DbSet<ApplicationUser> Users { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
