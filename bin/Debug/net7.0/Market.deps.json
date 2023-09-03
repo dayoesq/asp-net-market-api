@@ -8,7 +8,6 @@
     ".NETCoreApp,Version=v7.0": {
       "Market/1.0.0": {
         "dependencies": {
-          "AspNetCoreRateLimit": "5.0.0",
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
           "FluentEmail.Mailgun": "3.0.2",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "7.0.9",
@@ -23,20 +22,6 @@
         },
         "runtime": {
           "Market.dll": {}
-        }
-      },
-      "AspNetCoreRateLimit/5.0.0": {
-        "dependencies": {
-          "Microsoft.Extensions.Caching.Abstractions": "7.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "7.0.0",
-          "Microsoft.Extensions.Options": "7.0.1",
-          "Newtonsoft.Json": "13.0.2"
-        },
-        "runtime": {
-          "lib/net6.0/AspNetCoreRateLimit.dll": {
-            "assemblyVersion": "4.0.2.0",
-            "fileVersion": "4.0.2.0"
-          }
         }
       },
       "AutoMapper/12.0.1": {
@@ -110,7 +95,7 @@
       "FluentEmail.Mailgun/3.0.2": {
         "dependencies": {
           "FluentEmail.Core": "3.0.2",
-          "Newtonsoft.Json": "13.0.2"
+          "Newtonsoft.Json": "12.0.3"
         },
         "runtime": {
           "lib/netstandard2.0/FluentEmail.Mailgun.dll": {
@@ -559,11 +544,11 @@
           }
         }
       },
-      "Newtonsoft.Json/13.0.2": {
+      "Newtonsoft.Json/12.0.3": {
         "runtime": {
-          "lib/net6.0/Newtonsoft.Json.dll": {
-            "assemblyVersion": "13.0.0.0",
-            "fileVersion": "13.0.2.27524"
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.0.3.23909"
           }
         }
       },
@@ -840,13 +825,6 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
-    },
-    "AspNetCoreRateLimit/5.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-6fq9+o1maGADUmpK/PvcF0DtXW2+7bSkIL7MDIo/agbIHKN8XkMQF4oze60DO731WaQmHmK260hB30FwPzCmEg==",
-      "path": "aspnetcoreratelimit/5.0.0",
-      "hashPath": "aspnetcoreratelimit.5.0.0.nupkg.sha512"
     },
     "AutoMapper/12.0.1": {
       "type": "package",
@@ -1212,12 +1190,12 @@
       "path": "mono.texttemplating/2.2.1",
       "hashPath": "mono.texttemplating.2.2.1.nupkg.sha512"
     },
-    "Newtonsoft.Json/13.0.2": {
+    "Newtonsoft.Json/12.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-R2pZ3B0UjeyHShm9vG+Tu0EBb2lC8b0dFzV9gVn50ofHXh9Smjk6kTn7A/FdAsC8B5cKib1OnGYOXxRBz5XQDg==",
-      "path": "newtonsoft.json/13.0.2",
-      "hashPath": "newtonsoft.json.13.0.2.nupkg.sha512"
+      "sha512": "sha512-6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
+      "path": "newtonsoft.json/12.0.3",
+      "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
     },
     "Owin/1.0.0": {
       "type": "package",

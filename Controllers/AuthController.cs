@@ -21,13 +21,14 @@ namespace Market.Controllers;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
+        private readonly  IJwtService _jwtService;
         
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration, IMapper mapper, ApplicationDbContext context)
+            IConfiguration configuration, IMapper mapper, ApplicationDbContext context, IJwtService jwtService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -35,7 +36,7 @@ namespace Market.Controllers;
             _configuration = configuration;
             _mapper = mapper;
             _context = context;
-            
+            _jwtService = jwtService;
         }
 
         [HttpPost("register")]
@@ -86,7 +87,7 @@ namespace Market.Controllers;
             }
             
             await _signInManager.SignInAsync(user, false);
-            var token = new JwtProvider().GenerateToken(user);
+            var token = _jwtService.GenerateToken(user);
             user.LastLogin = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
