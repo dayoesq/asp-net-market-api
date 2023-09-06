@@ -10,8 +10,7 @@ public class Discount : BaseEntity
     public int Id { get; set; }
 
     [Required]
-    [MinLength(4, ErrorMessage = "The field '{0}' cannot be shorter than {1} characters")]
-    [MaxLength(8, ErrorMessage = "The field '{0}' cannot be longer than {1} characters")]
+    [StringLength(20, MinimumLength = 8, ErrorMessage = "Code must be between '{2}' and {1} characters.")]
     public string Code
     {
         get => _code;
