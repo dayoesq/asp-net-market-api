@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "bdjxAOQcQ4Kr47zfNH0zfSsTyuou4BFKG5e2Ilh/7/UgZUDt5I0bn+1IML2t1pnmXECd0xe4MJKzAKlVhLlS3g==",
+  "dgSpecHash": "TULpQvBCKXYSkBlqAdusdrXw+bcxJqRLK+vEkS5SPq6QInd7oNgSMs4E6ZTzXAkQeHoPD6qpmZcZYn31KwuIow==",
   "success": true,
   "projectFilePath": "/Volumes/MacExtended/Projects/dotnet/Market/Market.csproj",
   "expectedPackageFiles": [
@@ -11,6 +11,8 @@
     "/Users/dayo/.nuget/packages/fluentemail.core/3.0.2/fluentemail.core.3.0.2.nupkg.sha512",
     "/Users/dayo/.nuget/packages/fluentemail.mailgun/3.0.2/fluentemail.mailgun.3.0.2.nupkg.sha512",
     "/Users/dayo/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/mediatr/12.1.1/mediatr.12.1.1.nupkg.sha512",
+    "/Users/dayo/.nuget/packages/mediatr.contracts/2.0.1/mediatr.contracts.2.0.1.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/7.0.9/microsoft.aspnetcore.authentication.jwtbearer.7.0.9.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.cryptography.internal/7.0.9/microsoft.aspnetcore.cryptography.internal.7.0.9.nupkg.sha512",
     "/Users/dayo/.nuget/packages/microsoft.aspnetcore.cryptography.keyderivation/7.0.9/microsoft.aspnetcore.cryptography.keyderivation.7.0.9.nupkg.sha512",
