@@ -10,7 +10,7 @@ namespace Market.Services.Jwt;
     public class JwtProvider : IJwtService
     {
         private const string Jwt = "JWT";
-        private const string Secret = "Secret";
+        private const string SecretKey = "SecretKey";
         private const string Audience = "Audience";
         private const string ExpirationInMinutes = "ExpirationInMinutes";
         private const string Issuer = "Issuer";
@@ -56,7 +56,7 @@ namespace Market.Services.Jwt;
                 {
                     Audience = jwtSection.GetValue<string>(Audience)!,
                     Issuer = jwtSection.GetValue<string>(Issuer)!,
-                    Secret = jwtSection.GetValue<string>(Secret)!,
+                    Secret = jwtSection.GetValue<string>(SecretKey)!,
                     Expiration = jwtSection.GetValue<int>(ExpirationInMinutes)
 
                 };

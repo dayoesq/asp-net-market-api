@@ -23,6 +23,7 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
 builder.Services.AddScoped<IJwtService, JwtProvider>();
+
 builder.Services.AddMvc(options =>
 {
     options.Conventions.Add(new ControllerGlobalPrefix());
@@ -40,15 +41,14 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-
-builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
-
-builder.Services.AddAuthorization();
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

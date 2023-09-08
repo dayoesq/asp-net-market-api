@@ -5,6 +5,7 @@ using Market.Models;
 using Market.Models.DTOS;
 using Market.Services.Jwt;
 using Market.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +44,7 @@ namespace Market.Controllers;
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
         
-            if (!Regex.IsMatch(registerDto.FirstName, Constants.NAME_PATTERN) && !Regex.IsMatch(registerDto.LastName, Constants.NAME_PATTERN))
+            if (!Regex.IsMatch(registerDto.FirstName, Constants.NamePattern) && !Regex.IsMatch(registerDto.LastName, Constants.NamePattern))
             {
                 return BadRequest(new ErrorResponse(Errors.InvalidFormat + " name format"));
             }
@@ -67,7 +68,7 @@ namespace Market.Controllers;
             
             await _context.SaveChangesAsync();
             
-            return Created(nameof(Register), registerDto);
+            return StatusCode(StatusCodes.Status201Created);
         }
         
 
@@ -78,12 +79,12 @@ namespace Market.Controllers;
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
             {
-                return Unauthorized(new ErrorResponse(Errors.UnAuthorized401));
+                return Unauthorized(new ErrorResponse(Errors.InvalidCredentials));
             }
             
             if (!user.EmailConfirmed)
             {
-                return Unauthorized(new ErrorResponse(Errors.UnAuthorized401));
+                return BadRequest(new ErrorResponse(Errors.UnverifiedAccount));
             }
             
             await _signInManager.SignInAsync(user, false);
@@ -95,26 +96,36 @@ namespace Market.Controllers;
         }
         
         
-        [HttpPost("create-role")]
-        public async Task<IActionResult> CreateRole([FromBody] string roleName)
+        [Authorize]
+        [HttpGet("logout")]
+        public async Task<IActionResult> Logout()
         {
-            var role = roleName.ToLower();
-            var roleExists = await _roleManager.RoleExistsAsync(role);
+            await _signInManager.SignOutAsync();
+            return Ok();
+        }
+
+        
+        [Authorize(Roles = "ADMIN, SUPER")]
+        [HttpPost("create-role")]
+        public async Task<IActionResult> CreateRole([FromBody] AccountRoleDto roleDto)
+        {
+            var roleExists = await _roleManager.RoleExistsAsync(roleDto.Role);
 
             if (roleExists)
             {
                 return Conflict(new ErrorResponse(Errors.Conflict409));
             }
 
-            var roleToAdd = new IdentityRole(roleName);
+            var roleToAdd = new IdentityRole(roleDto.Role);
             var result = await _roleManager.CreateAsync(roleToAdd);
 
-            return result.Succeeded ? Created(nameof(CreateRole), role) : StatusCode(500, new ErrorResponse(Errors.Server500));
+            return result.Succeeded ? StatusCode(StatusCodes.Status201Created): 
+                StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-
+        [Authorize(Roles = "ADMIN, SUPER")]
         [HttpPost("assign-role")]
-        public async Task<IActionResult> AssignRoleToUser([FromBody] RoleAssignmentDto model)
+        public async Task<IActionResult> AssignRole([FromBody] RoleAssignmentDto model)
         {
             var roleModel = model.Email.ToLower();
             var user = await _userManager.FindByEmailAsync(roleModel);
@@ -131,7 +142,7 @@ namespace Market.Controllers;
 
             if (!result.Succeeded)
             {
-                return StatusCode(500, new ErrorResponse(Errors.Server500));
+                return  StatusCode(StatusCodes.Status500InternalServerError);
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -146,7 +157,7 @@ namespace Market.Controllers;
 
             if (user == null)
             {
-                return NotFound(new ErrorResponse(Errors.NotFound404));
+                return NotFound();
             }
 
             if (user.EmailConfirmed)
@@ -166,21 +177,21 @@ namespace Market.Controllers;
             var result = await _userManager.UpdateAsync(user);
 
             return result.Succeeded ? Ok() :
-                StatusCode(500, new ErrorResponse(Errors.Server500));
+                StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        [HttpPost("request-to-change-password")]
+        [HttpPost("request-password-reset")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequestDto passwordResetRequestDto)
         {
             var user = await _userManager.FindByEmailAsync(passwordResetRequestDto.Email);
             if (user == null)
             {
-                return NotFound(new ErrorResponse(Errors.NotFound404));
+                return NotFound();
             }
             
             if ((bool)(!user.IsVerified)!)
             {
-                return Unauthorized(new ErrorResponse(Errors.UnAuthorized401));
+                return  StatusCode(StatusCodes.Status401Unauthorized);
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -192,7 +203,7 @@ namespace Market.Controllers;
             
         }
         
-        [HttpPost("password-reset")]
+        [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto passwordResetDto)
         {
             
@@ -211,7 +222,7 @@ namespace Market.Controllers;
             
             if (!result.Succeeded)
             {
-                return StatusCode(500, new ErrorResponse(Errors.Server500));
+                return  StatusCode(StatusCodes.Status500InternalServerError, new ErrorResponse(Errors.Server500));
             }
 
             user.PasswordResetToken = null;

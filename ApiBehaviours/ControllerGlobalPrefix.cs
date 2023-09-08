@@ -16,7 +16,7 @@ public class ControllerGlobalPrefix : IApplicationModelConvention
                 selectorModel.AttributeRouteModel = new AttributeRouteModel
                 {
                     Template = AttributeRouteModel
-                        .CombineTemplates(Constants.API_PREFIX, selectorModel.AttributeRouteModel?.Template)
+                        .CombineTemplates(Constants.ApiPrefix, selectorModel.AttributeRouteModel?.Template)
                 };
             }
         }

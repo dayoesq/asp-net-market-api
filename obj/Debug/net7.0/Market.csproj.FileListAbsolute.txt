@@ -181,7 +181,3 @@
 /Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/FluentEmail.Core.dll
 /Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/FluentEmail.Mailgun.dll
 /Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/Newtonsoft.Json.dll
-/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/Microsoft.Owin.dll
-/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/Owin.dll
-/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/MediatR.dll
-/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/MediatR.Contracts.dll

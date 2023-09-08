@@ -1,7 +1,7 @@
 using AutoMapper;
 using Market.DataContext;
-using Market.Models;
 using Market.Models.DTOS;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +21,8 @@ public class UsersController : ControllerBase
         _mapper = mapper;
     }
     
-    [Authorize]
+    [Authorize(Roles = "ADMIN, SUPER")]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "ADMIN, SUPER")]
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
