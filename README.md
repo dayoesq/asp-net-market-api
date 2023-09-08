@@ -1,4 +1,4 @@
-# E-Commerce Web API README
+# E-Commerce Web API
 
 Welcome to the E-Commerce Web API, a robust and flexible ASP.NET application designed to power your e-commerce platform. This README file provides essential information to help you understand, configure, and utilize this API effectively.
 
