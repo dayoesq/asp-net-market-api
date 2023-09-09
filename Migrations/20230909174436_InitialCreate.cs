@@ -64,7 +64,7 @@ namespace Market.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Color",
+                name: "Colors",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -75,7 +75,7 @@ namespace Market.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Color", x => x.Id);
+                    table.PrimaryKey("PK_Colors", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,7 +84,7 @@ namespace Market.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Percentage = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -95,7 +95,7 @@ namespace Market.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Size",
+                name: "Sizes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -106,7 +106,7 @@ namespace Market.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Size", x => x.Id);
+                    table.PrimaryKey("PK_Sizes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -236,9 +236,9 @@ namespace Market.Migrations
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Color_ColorId",
+                        name: "FK_Products_Colors_ColorId",
                         column: x => x.ColorId,
-                        principalTable: "Color",
+                        principalTable: "Colors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -248,9 +248,9 @@ namespace Market.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Products_Size_SizeId",
+                        name: "FK_Products_Sizes_SizeId",
                         column: x => x.SizeId,
-                        principalTable: "Size",
+                        principalTable: "Sizes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -359,8 +359,8 @@ namespace Market.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Color_Name",
-                table: "Color",
+                name: "IX_Colors_Name",
+                table: "Colors",
                 column: "Name",
                 unique: true);
 
@@ -425,13 +425,13 @@ namespace Market.Migrations
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "Color");
+                name: "Colors");
 
             migrationBuilder.DropTable(
                 name: "Discounts");
 
             migrationBuilder.DropTable(
-                name: "Size");
+                name: "Sizes");
         }
     }
 }

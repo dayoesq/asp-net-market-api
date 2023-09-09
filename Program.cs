@@ -3,11 +3,12 @@ using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
-using Market.OptionsSetup;
+using Market.OptionsSetup.Jwt;
 using Market.Services.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
+builder.Services.ConfigureOptions<JwtOptionsSetup>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+
+builder.Services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<JwtOptions>>().Value);
 
 builder.Services.AddAuthorization();
 

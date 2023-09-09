@@ -3,6 +3,7 @@ using AutoMapper;
 using Market.DataContext;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.OptionsSetup.Jwt;
 using Market.Services.Jwt;
 using Market.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -19,25 +20,25 @@ namespace Market.Controllers;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
         private readonly  IJwtService _jwtService;
+        private readonly  JwtOptions _jwtOptions;
         
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration, IMapper mapper, ApplicationDbContext context, IJwtService jwtService)
+            RoleManager<IdentityRole> roleManager, 
+            IMapper mapper, ApplicationDbContext context, IJwtService jwtService, JwtOptions jwtOptions)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
-            _configuration = configuration;
             _mapper = mapper;
             _context = context;
             _jwtService = jwtService;
+            _jwtOptions = jwtOptions;
         }
 
         [HttpPost("register")]
@@ -92,7 +93,8 @@ namespace Market.Controllers;
             user.LastLogin = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            return Ok(new { token, expiration = _configuration.GetValue<int>("JWT:ExpirationInMinutes") });
+            return Ok(new { token, expiration = DateTime.UtcNow.AddHours(_jwtOptions.Expires)});
+            
         }
         
         
@@ -105,7 +107,7 @@ namespace Market.Controllers;
         }
 
         
-        [Authorize(Roles = "ADMIN, SUPER")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "ADMIN, SUPER")]
         [HttpPost("create-role")]
         public async Task<IActionResult> CreateRole([FromBody] AccountRoleDto roleDto)
         {
@@ -123,7 +125,7 @@ namespace Market.Controllers;
                 StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        [Authorize(Roles = "ADMIN, SUPER")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "ADMIN, SUPER")]
         [HttpPost("assign-role")]
         public async Task<IActionResult> AssignRole([FromBody] RoleAssignmentDto model)
         {
