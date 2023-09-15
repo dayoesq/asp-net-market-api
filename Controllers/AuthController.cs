@@ -23,8 +23,6 @@ namespace Market.Controllers;
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
-    private const string LoginMode = "loginMode";
-    private const string RegisterMode = "registerMode";
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IMapper _mapper;
