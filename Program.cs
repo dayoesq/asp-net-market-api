@@ -4,7 +4,7 @@ using Market.DataContext;
 using Market.Filters;
 using Market.Models;
 using Market.OptionsSetup.Jwt;
-using Market.Services.Jwt;
+using Market.Utils.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +23,6 @@ builder.Services.AddControllers(options =>
 }).ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 
 builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
-builder.Services.AddScoped<IJwtService, JwtProvider>();
 
 builder.Services.AddMvc(options =>
 {
@@ -48,11 +47,23 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 
 builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
 builder.Services.ConfigureOptions<JwtOptionsSetup>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 
-builder.Services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<JwtOptions>>().Value);
+builder.Services.AddSingleton(config => config.GetRequiredService<IOptions<JwtOptions>>().Value);
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Roles.Admin, policy => policy.RequireClaim(Roles.Admin));
+    options.AddPolicy(Roles.User, policy => policy.RequireClaim(Roles.User));
+    options.AddPolicy(Roles.Super, policy => policy.RequireClaim(Roles.Super));
+    options.AddPolicy(Roles.Vendor, policy => policy.RequireClaim(Roles.Vendor));
+    options.AddPolicy(Roles.Management, policy => policy.RequireClaim(Roles.Management));
+    
+});
 
 builder.Services.AddAuthorization();
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -66,7 +77,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
 
 app.UseAuthentication();
 

@@ -1,5 +1,3 @@
-Certainly! Here is a copy of the MIT License:
-
 ```
 MIT License
 
