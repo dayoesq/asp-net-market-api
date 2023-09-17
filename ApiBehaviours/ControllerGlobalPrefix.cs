@@ -5,6 +5,7 @@ namespace Market.ApiBehaviours;
 
 public class ControllerGlobalPrefix : IApplicationModelConvention
 {
+    private const string ApiPrefix = "api/v1";
     public void Apply(ApplicationModel application)
     {
         foreach (var controller in application.Controllers)
@@ -16,7 +17,7 @@ public class ControllerGlobalPrefix : IApplicationModelConvention
                 selectorModel.AttributeRouteModel = new AttributeRouteModel
                 {
                     Template = AttributeRouteModel
-                        .CombineTemplates(Constants.ApiPrefix, selectorModel.AttributeRouteModel?.Template)
+                        .CombineTemplates(ApiPrefix, selectorModel.AttributeRouteModel?.Template)
                 };
             }
         }

@@ -39,44 +39,47 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         foreach (var entity in entities)
         {
-            if (entity.Entity is BaseEntity baseEntity)
+            switch (entity.Entity)
             {
-                switch (entity.State)
-                {
-                    case EntityState.Added:
-                        baseEntity.CreatedAt = currentTime;
-                        break;
-                    case EntityState.Detached: 
-                        break;
-                    case EntityState.Unchanged:
-                        break;
-                    case EntityState.Modified: 
-                        baseEntity.UpdatedAt = currentTime;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                case BaseEntity baseEntity:
+                    switch (entity.State)
+                    {
+                        case EntityState.Added:
+                            baseEntity.CreatedAt = currentTime;
+                            break;
+                        case EntityState.Detached: 
+                            break;
+                        case EntityState.Unchanged:
+                            break;
+                        case EntityState.Modified: 
+                            baseEntity.UpdatedAt = currentTime;
+                            break;
+                        case EntityState.Deleted:
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
 
-                baseEntity.UpdatedAt = currentTime;
-            }
-            else if(entity.Entity is ApplicationUser)
-            {
-                switch (entity.State)
-                {
-                    case EntityState.Added:
-                        entity.Property("CreatedAt").CurrentValue = currentTime;
-                        break;
-                    case EntityState.Detached:
-                    case EntityState.Unchanged:
-                        break;
-                    case EntityState.Modified:
-                        entity.Property("UpdatedAt").CurrentValue = currentTime;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    baseEntity.UpdatedAt = currentTime;
+                    break;
+                case ApplicationUser:
+                    switch (entity.State)
+                    {
+                        case EntityState.Added:
+                            entity.Property("CreatedAt").CurrentValue = currentTime;
+                            break;
+                        case EntityState.Detached:
+                        case EntityState.Unchanged:
+                            break;
+                        case EntityState.Modified:
+                            entity.Property("UpdatedAt").CurrentValue = currentTime;
+                            break;
+                        case EntityState.Deleted:
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
 
-                entity.Property("UpdatedAt").CurrentValue = currentTime;
+                    entity.Property("UpdatedAt").CurrentValue = currentTime;
+                    break;
             }
         }
 
