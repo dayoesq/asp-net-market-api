@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using ClaimTypes = Market.Utils.ClaimTypes;
+
 
 namespace Market.Controllers;
 
@@ -40,6 +40,7 @@ public class AuthController : ControllerBase
         _mapper = mapper;
         _context = context;
         _jwtOptions = jwtOptions;
+
     }
 
     [HttpPost("register")]
@@ -62,7 +63,7 @@ public class AuthController : ControllerBase
         user.VerificationCode = Helper.GenerateRandomNumber(8);
         user.IsVerified = false;
         user.EmailConfirmed = false;
-        
+
         var result = await _userManager.CreateAsync(user, registerDto.Password);
 
         if (!result.Succeeded)
@@ -72,12 +73,12 @@ public class AuthController : ControllerBase
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Role, Roles.User),
-            new(ClaimTypes.Email, user.Email!),
-            new(ClaimTypes.Uuid, new Guid().ToString())
+            new(CustomClaimTypes.Sub, user.Id),
+            new(CustomClaimTypes.Roles, Roles.User),
         };
-        
+
         await _userManager.AddClaimsAsync(user, claims);
+
         await _context.SaveChangesAsync();
         return StatusCode(StatusCodes.Status201Created);
     }
@@ -105,10 +106,7 @@ public class AuthController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError,
                 ErrorResponse.SendMessage(Errors.Server500));
         }
-        
-        var claims = await _userManager.GetClaimsAsync(user);
-        
-        var token = GenerateJwtToken(user, claims);
+        var token = await GenerateJwtToken(user);
         user.LastLogin = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         return Ok(new { Token = token });
@@ -125,7 +123,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    //[Authorize(Roles = "ADMIN, SUPER")]
+
     [HttpPost("assign-claim/{id}")]
     public async Task<IActionResult> AssignClaim(string id, [FromBody] ClaimDto claimDto)
     {
@@ -137,12 +135,23 @@ public class AuthController : ControllerBase
             return NotFound(ErrorResponse.SendMessage(Errors.NotFound404));
         }
 
-        await _userManager.AddClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
+        var existingClaims = await _userManager.GetClaimsAsync(user);
+
+        var claimExists = existingClaims.Any(c => c.Type == claimDto.Type && c.Value == claimDto.Value);
+
+        if (!claimExists)
+        {
+            await _userManager.AddClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
+        }
+        else
+        {
+            return Conflict(ErrorResponse.SendMessage(Errors.Conflict409));
+        }
+
         return Ok();
     }
 
 
-    //[Authorize(Roles = "ADMIN, SUPER")]
     [HttpPost("remove-claim/{id}")]
     public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimDto claimDto)
     {
@@ -240,8 +249,24 @@ public class AuthController : ControllerBase
 
         return Ok();
     }
-    
-    private string GenerateJwtToken(ApplicationUser user, IEnumerable<Claim> claims)
+
+    private async Task<IEnumerable<Claim>> AddDefaultClaimsToUser(ApplicationUser user)
+    {
+        var claims = await _userManager.GetClaimsAsync(user);
+        if (claims.Count <= 0)
+        {
+            claims = new List<Claim>
+            {
+                new(CustomClaimTypes.Sub, user.Id),
+                new(CustomClaimTypes.Roles, Roles.User),
+            };
+
+            await _userManager.AddClaimsAsync(user, claims);
+        }
+        return claims;
+    }
+
+    private async Task<string> GenerateJwtToken(ApplicationUser user)
     {
 
         try
@@ -252,17 +277,19 @@ public class AuthController : ControllerBase
                     "User email is required to generate a JWT token.");
             }
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
-            
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(_jwtOptions.Expires),
-                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-            };
-            
+
+            var claims = await AddDefaultClaimsToUser(user);
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(_jwtOptions.Expires),
+                signingCredentials: credentials
+            );
+
             var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            
             return tokenHandler.WriteToken(token);
         }
         catch (Exception e)

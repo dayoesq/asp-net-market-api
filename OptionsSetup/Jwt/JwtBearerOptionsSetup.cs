@@ -15,12 +15,15 @@ namespace Market.OptionsSetup.Jwt;
             _jwtOptions = jwtOptions.Value;
         }
 
+        // To be edited for production!
         public void Configure(JwtBearerOptions options)
         {
+            options.RequireHttpsMetadata = false;
+            options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = _jwtOptions.Issuer,
