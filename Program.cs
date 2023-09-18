@@ -54,20 +54,16 @@ builder.Services.AddSingleton(config => config.GetRequiredService<IOptions<JwtOp
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(Roles.Admin, policy => policy.RequireClaim(Roles.Admin));
-    options.AddPolicy(Roles.User, policy => policy.RequireClaim(Roles.User));
-    options.AddPolicy(Roles.Super, policy => policy.RequireClaim(Roles.Super));
-    options.AddPolicy(Roles.Vendor, policy => policy.RequireClaim(Roles.Vendor));
-    options.AddPolicy(Roles.Management, policy => policy.RequireClaim(Roles.Management));
+    options.AddPolicy(Roles.Admin, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Admin));
+    options.AddPolicy(Roles.Super, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Super));
+    options.AddPolicy(Roles.Vendor, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Vendor));
+    options.AddPolicy(Roles.Management, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Management));
+    options.AddPolicy(Roles.User, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.User));
     
 });
 
-builder.Services.AddAuthorization();
-
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 var app = builder.Build();
 

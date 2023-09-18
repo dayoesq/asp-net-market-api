@@ -1,4 +1,3 @@
-using Market.Utils;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Market.ApiBehaviours;
