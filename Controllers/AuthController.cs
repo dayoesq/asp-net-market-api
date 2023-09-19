@@ -230,7 +230,7 @@ public class AuthController : ControllerBase
             return NotFound();
         }
 
-        if (user.PasswordResetTokenExpiration == null || !(user.PasswordResetTokenExpiration > DateTime.UtcNow))
+        if (user.PasswordResetTokenExpiration <= DateTime.UtcNow)
         {
             return NotFound();
         }

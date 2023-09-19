@@ -1,14 +1,17 @@
+using System.Text;
 using Market.ApiBehaviours;
 using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
+using Market.OptionsSetup;
 using Market.OptionsSetup.Jwt;
 using Market.Utils.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,24 +48,32 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
-builder.Services.ConfigureOptions<JwtOptionsSetup>();
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer"),
+        ValidAudience = builder.Configuration.GetValue<string>("Jwt:Audience"),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("Jwt:SecretKey")!)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
 builder.Services.AddSingleton(config => config.GetRequiredService<IOptions<JwtOptions>>().Value);
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(Roles.Admin, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Admin));
-    options.AddPolicy(Roles.Super, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Super));
-    options.AddPolicy(Roles.Vendor, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Vendor));
-    options.AddPolicy(Roles.Management, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Management));
-    options.AddPolicy(Roles.User, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.User));
-    
-});
+builder.Services.ConfigureOptions<JwtOptionsSetup>();
+
+builder.Services.ConfigureOptions<AuthorizationOptionsSetup>();
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
