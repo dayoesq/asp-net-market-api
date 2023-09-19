@@ -22,14 +22,13 @@ public class UsersController : ControllerBase
     
     }
 
-
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
     [HttpGet(Name = "get-users")]
     public async Task<IActionResult> GetUsers()
     {
         var users = await _context.Users.ToListAsync();
-        var userDtos = _mapper.Map<List<UserDto>>(users);
-        return Ok(userDtos);
+        var result = _mapper.Map<List<UserDto>>(users);
+        return Ok(result);
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -38,9 +37,21 @@ public class UsersController : ControllerBase
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return NotFound();
-        var userDto = _mapper.Map<UserDto>(user);
+        var result = _mapper.Map<UserDto>(user);
 
-        return Ok(userDto);
+        return Ok(result);
+
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpDelete("{id}", Name = "delete-user")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user == null) return NotFound();
+        _context.Remove(user);
+        await _context.SaveChangesAsync();
+        return Ok(user.Id);
 
     }
 }

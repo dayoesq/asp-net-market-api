@@ -8,6 +8,7 @@ public class AuthorizationOptionsSetup : IConfigureOptions<AuthorizationOptions>
 {
     public void Configure(AuthorizationOptions options)
     {
+    
         options.AddPolicy(Roles.Admin, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Admin));
         options.AddPolicy(Roles.Super, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Super));
         options.AddPolicy(Roles.Vendor, policy => policy.RequireClaim(CustomClaimTypes.Roles, Roles.Vendor));

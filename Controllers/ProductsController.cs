@@ -1,9 +1,9 @@
-using System.Collections.Specialized;
 using AutoMapper;
 using Market.DataContext;
-using Market.Filters;
 using Market.Models;
 using Market.Models.DTOS;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,33 +23,45 @@ public class ProductsController : ControllerBase
         _webHostEnvironment = webHostEnvironment;
     }
 
-    [HttpGet(Name = "all-products")]
+    [HttpGet(Name = "products")]
     public async Task<IActionResult> GetProducts()
     {
         var products = await _context.Products.ToListAsync();
-        var productDtos = _mapper.Map<List<ProductDto>>(products);
-        return Ok(productDtos);
+        var result = _mapper.Map<List<ProductDto>>(products);
+        return Ok(result);
     }
-    
-    [HttpPost(Name = "create-product")]
-    [ValidateImageAndVideoFilter]
-    public async Task<IActionResult>  CreateProduct([FromForm] ProductCreateDto productCreateDto)
-    {
-        var product = _mapper.Map<Product>(productCreateDto);
 
-        foreach (var (imageDto, index) in productCreateDto.Images.Select((value, index) => (value, index)))
+    [HttpGet("{id:int}", Name = "product")]
+    public async Task<IActionResult> GetProduct(long id)
+    {
+        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+        var result = _mapper.Map<ProductDto>(product);
+        return Ok(result);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+    [HttpPost(Name = "create-product")]
+    public async Task<IActionResult> CreateProduct([FromForm] ProductCreateDto model)
+    {
+        var product = _mapper.Map<Product>(model);
+
+        foreach (var (imageDto, index) in model.Images.Select((value, index) => (value, index)))
         {
             var fileExtension = Path.GetExtension(imageDto.Path)?.TrimStart('.');
             var uniqueFileName = GenerateUniqueFileName(product.Id, index + 1, fileExtension);
             var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "images/products", uniqueFileName);
-            
+
             using var client = new HttpClient();
             using var response = await client.GetAsync(imageDto.Path);
             await using var stream = await response.Content.ReadAsStreamAsync();
 
             await using var fileStream = new FileStream(imagePath, FileMode.Create);
             await stream.CopyToAsync(fileStream);
-            
+
             var productImage = new ProductImage
             {
                 Name = imageDto.Name,
@@ -62,10 +74,10 @@ public class ProductsController : ControllerBase
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
 
-        return Created(nameof(CreateProduct), product);
+        return CreatedAtAction(nameof(CreateProduct), product);
 
     }
-    
+
     private static string GenerateUniqueFileName(int productId, int index, string? fileExtension)
     {
         var guid = Guid.NewGuid().ToString();
@@ -73,6 +85,6 @@ public class ProductsController : ControllerBase
         return $"{guid}-{date}-P{productId}-I{index + 1}.{fileExtension}";
     }
 
-    
+
 
 }
