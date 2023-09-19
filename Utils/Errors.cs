@@ -10,5 +10,6 @@ public static class Errors
     public static string Repetition { get; set; } = "This action is already performed.";
     public static string InvalidFormat { get; set; } = "Invalid.";
     public static string UnverifiedAccount { get; set; } = "Unverified account.";
-   
+    public static string ExpiredToken { get; set; } = "Expired token.";
+
 }

@@ -28,6 +28,7 @@ public class AutoMapperProfiles : Profile
         CreateMap<DiscountCreateDto, Discount>().ReverseMap();
         CreateMap<ProductImageCreateDto, ProductImage>().ReverseMap();
         CreateMap<CategoryCreateDto, Category>().ReverseMap();
+        CreateMap<CategoryUpdateDto, Category>().ReverseMap();
         CreateMap<Discount, DiscountDto>().ReverseMap();
         CreateMap<DiscountUpdateDto, Discount>().ReverseMap();
     }

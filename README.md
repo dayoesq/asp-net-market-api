@@ -67,11 +67,12 @@ The E-Commerce Web API uses JSON Web Tokens (JWT) for authentication. To access 
 The API provides various endpoints for managing e-commerce data. Here are some of the core endpoints:
 
 - `/api/v1/products`: CRUD operations for products.
-- `/api/v1/orders`: Create and manage orders.
-- `/api/v1/customers`: Manage customer profiles.
+- `/api/v1/discounts`: CRUD opertations for discounts.
+- `/api/v1/categories`: CRUD opertations for discounts.
+- `/api/v1/users`: CRUD opertations for users.
 - `/api/v1/auth`: User authentication and registration.
 
-For a complete list of endpoints and their documentation, refer to the API documentation or explore the codebase.
+For a complete list of endpoints and their documentation, explore the codebase.
 
 ### Sample Requests
 
@@ -105,24 +106,6 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_
 }' http://localhost:5000/api/v1/products
 ```
 
-## 5. Security
-
-Security is crucial for any e-commerce application. Here are some security considerations:
-
-- Always use HTTPS to encrypt data transmission.
-- Implement rate limiting and authentication mechanisms to prevent abuse.
-- Keep the API and all dependencies up to date to patch security vulnerabilities.
-- Use strong and secure passwords for user accounts.
-- Implement role-based access control (RBAC) to restrict access to sensitive endpoints.
-
-## 6. Testing
-
-Unit tests and integration tests are essential for maintaining the reliability of the API. You can run tests using the testing framework of your choice, such as MSTest or xUnit.
-
-## 7. Contributing
-
-Contributions are welcome! If you want to contribute to the E-Commerce Web API project, please follow the guidelines in the `CONTRIBUTING.md` file.
-
-## 8. License
+## 5. License
 
 This project is licensed under the [MIT License](LICENSE). Feel free to use and modify it for your e-commerce application.
