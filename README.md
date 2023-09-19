@@ -13,10 +13,7 @@ Welcome to the E-Commerce Web API, a robust and flexible ASP.NET application des
     - [Authentication](#authentication)
     - [Endpoints](#endpoints)
     - [Sample Requests](#sample-requests)
-5. [Security](#security)
-6. [Testing](#testing)
-7. [Contributing](#contributing)
-8. [License](#license)
+5. [License](#license)
 
 ## 1. Introduction
 
