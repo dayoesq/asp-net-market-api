@@ -7,7 +7,6 @@ using Market.Models;
 using Market.OptionsSetup;
 using Market.OptionsSetup.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

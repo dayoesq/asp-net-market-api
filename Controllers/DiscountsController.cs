@@ -6,6 +6,8 @@ using Market.DataContext;
 using Market.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Market.Utils;
+using Market.Utils.Constants;
 
 namespace Market.Controllers;
 
@@ -23,7 +25,7 @@ public class DiscountsController : ControllerBase
         _context = context;
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
     [HttpPost]
     public async Task<IActionResult> CreateDiscount([FromBody] DiscountCreateDto model)
     {
@@ -32,7 +34,7 @@ public class DiscountsController : ControllerBase
 
         if (discount != null)
         {
-            return Conflict();
+            return Conflict(new { message = Errors.Conflict409 });
         }
 
         var result = _mapper.Map<Discount>(model);
@@ -56,14 +58,14 @@ public class DiscountsController : ControllerBase
         var discount = await _context.Discounts.FirstOrDefaultAsync(a => a.Id == id);
         if (discount == null)
         {
-            return NotFound();
+            return NotFound(new { message = Errors.NotFound404 });
         }
 
         var result = _mapper.Map<Discount, DiscountDto>(discount);
         return Ok(result);
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateDiscount(int id, [FromBody] DiscountUpdateDto model)
     {
@@ -71,12 +73,12 @@ public class DiscountsController : ControllerBase
 
         if (category == null)
         {
-            return NotFound();
+            return NotFound(new { message = Errors.NotFound404 });
         }
 
         if (category.Code == model.Code.ToUpper())
         {
-            return Conflict();
+            return Conflict(new { message = Errors.Conflict409 });
         }
 
         var result = _mapper.Map(model, category);
@@ -85,15 +87,15 @@ public class DiscountsController : ControllerBase
 
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.Super)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteDiscount(int id)
     {
-        var category = await _context.Discounts.FirstOrDefaultAsync(a => a.Id == id);
-        if (category == null) return NotFound();
-        _context.Discounts.Remove(category);
+        var discount = await _context.Discounts.FirstOrDefaultAsync(a => a.Id == id);
+        if (discount == null) return NotFound(new { message = Errors.NotFound404 });
+        _context.Discounts.Remove(discount);
         await _context.SaveChangesAsync();
-        return Ok(category.Id);
+        return Ok(new { message = ResponseMessage.Success });
     }
 
 }

@@ -64,9 +64,9 @@ The E-Commerce Web API uses JSON Web Tokens (JWT) for authentication. To access 
 The API provides various endpoints for managing e-commerce data. Here are some of the core endpoints:
 
 - `/api/v1/products`: CRUD operations for products.
-- `/api/v1/discounts`: CRUD opertations for discounts.
-- `/api/v1/categories`: CRUD opertations for discounts.
-- `/api/v1/users`: CRUD opertations for users.
+- `/api/v1/discounts`: CRUD operations for discounts.
+- `/api/v1/categories`: CRUD operations for discounts.
+- `/api/v1/users`: CRUD operations for users.
 - `/api/v1/auth`: User authentication and registration.
 
 For a complete list of endpoints and their documentation, explore the codebase.

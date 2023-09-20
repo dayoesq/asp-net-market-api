@@ -13,3 +13,8 @@ public static class Errors
     public static string ExpiredToken { get; set; } = "Expired token.";
 
 }
+public static class ResponseMessage
+{
+    public static string Success { get; set; } = "Operation successful.";
+
+}

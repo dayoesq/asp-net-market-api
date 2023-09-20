@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Market.Utils.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,14 +10,11 @@ namespace Market.Models;
 public class ApplicationUser : IdentityUser
 {
     [Required]
-    [MaxLength(25)]
-    [MinLength(2)]
-    public string FirstName { get; set; }
-    
+    [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
+    public string FirstName { get; set; } = null!;
     [Required]
-    [MaxLength(25)]
-    [MinLength(2)]
-    public string LastName { get; set; }
+    [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
+    public string LastName { get; set; } = null!;
     public string? Address { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; }

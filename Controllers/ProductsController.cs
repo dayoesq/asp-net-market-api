@@ -2,6 +2,7 @@ using AutoMapper;
 using Market.DataContext;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +38,7 @@ public class ProductsController : ControllerBase
         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
         if (product == null)
         {
-            return NotFound();
+            return NotFound(new { message = Errors.NotFound404 });
         }
         var result = _mapper.Map<ProductDto>(product);
         return Ok(result);
