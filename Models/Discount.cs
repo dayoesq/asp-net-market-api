@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Market.Utils.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Market.Models;
@@ -10,7 +11,7 @@ public class Discount : BaseEntity
     public int Id { get; set; }
 
     [Required]
-    [StringLength(20, MinimumLength = 8, ErrorMessage = "Code must be between '{2}' and {1} characters.")]
+    [StringLength(Constants.MaxLength, ErrorMessage = "{0} cannot be longer than {1} characters.")]
     public string Code
     {
         get => _code;
@@ -19,5 +20,5 @@ public class Discount : BaseEntity
     [Required]
     [Range(0, 100)]
     public int Percentage { get; set; }
-    
+
 }

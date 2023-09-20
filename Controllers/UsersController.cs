@@ -1,6 +1,7 @@
 using AutoMapper;
 using Market.DataContext;
 using Market.Models.DTOS;
+using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ public class UsersController : ControllerBase
     {
         _context = context;
         _mapper = mapper;
-    
+
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
@@ -36,9 +37,8 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetUser(string id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return NotFound();
+        if (user == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<UserDto>(user);
-
         return Ok(result);
 
     }
@@ -48,10 +48,10 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> DeleteUser(string id)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return NotFound();
+        if (user == null) return NotFound(new { message = Errors.NotFound404 });
         _context.Remove(user);
         await _context.SaveChangesAsync();
-        return Ok(user.Id);
+        return Ok(new { message = ResponseMessage.Success });
 
     }
 }

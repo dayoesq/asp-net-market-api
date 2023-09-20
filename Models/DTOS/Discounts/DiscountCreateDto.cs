@@ -1,16 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using Market.Utils.Constants;
 
 namespace Market.Models.DTOS;
 
 public class DiscountCreateDto
 {
-    
+
     [Required]
-    [StringLength(20, MinimumLength = 8, ErrorMessage = "Code must be between {2} and {1} characters.")]
-    public string? Code { get; set; }
-    
+    [StringLength(Constants.MaxLength, ErrorMessage = "{0} cannot be longer than {1} characters.")]
+    public string Code { get; set; } = null!;
+
     [Required]
     [Range(0, 100)]
     public int Percentage { get; set; }
-    
+
 }

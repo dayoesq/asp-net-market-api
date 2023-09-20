@@ -50,13 +50,13 @@ public class AuthController : ControllerBase
         if (!Regex.IsMatch(registerDto.FirstName, Constants.NamePattern) &&
             !Regex.IsMatch(registerDto.LastName, Constants.NamePattern))
         {
-            return BadRequest(ErrorResponse.SendMessage(Errors.InvalidFormat + " name format"));
+            return BadRequest(new { message = Errors.InvalidFormat + " name format" });
         }
 
         var currentUser = _userManager.FindByEmailAsync(registerDto.Email);
         if (currentUser.Result?.Email?.ToUpperInvariant() == registerDto.Email.ToUpperInvariant())
         {
-            return Conflict(ErrorResponse.SendMessage(Errors.Conflict409));
+            return Conflict(new { message = Errors.Conflict409 });
         }
 
         var user = _mapper.Map<ApplicationUser>(registerDto);
@@ -78,7 +78,6 @@ public class AuthController : ControllerBase
         };
 
         await _userManager.AddClaimsAsync(user, claims);
-
         await _context.SaveChangesAsync();
         return StatusCode(StatusCodes.Status201Created);
     }
@@ -91,12 +90,12 @@ public class AuthController : ControllerBase
 
         if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
         {
-            return Unauthorized(ErrorResponse.SendMessage(Errors.InvalidCredentials));
+            return Unauthorized(new { message = Errors.InvalidCredentials });
         }
 
         if (!user.EmailConfirmed)
         {
-            return BadRequest(ErrorResponse.SendMessage(Errors.UnverifiedAccount));
+            return BadRequest(new { message = Errors.UnverifiedAccount });
         }
 
         var result =
@@ -104,7 +103,7 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                ErrorResponse.SendMessage(Errors.Server500));
+                new { message = Errors.Server500 });
         }
         var token = await GenerateJwtToken(user);
         user.LastLogin = DateTime.UtcNow;
@@ -114,8 +113,7 @@ public class AuthController : ControllerBase
 
     }
 
-
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -123,7 +121,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
     [HttpPost("assign-claim/{id}")]
     public async Task<IActionResult> AssignClaim(string id, [FromBody] ClaimDto claimDto)
     {
@@ -132,7 +130,7 @@ public class AuthController : ControllerBase
 
         if (user == null)
         {
-            return NotFound(ErrorResponse.SendMessage(Errors.NotFound404));
+            return NotFound(new { message = Errors.NotFound404 });
         }
 
         var existingClaims = await _userManager.GetClaimsAsync(user);
@@ -145,13 +143,13 @@ public class AuthController : ControllerBase
         }
         else
         {
-            return Conflict(ErrorResponse.SendMessage(Errors.Conflict409));
+            return Conflict(new { message = Errors.Conflict409 });
         }
 
         return Ok();
     }
 
-
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
     [HttpPost("remove-claim/{id}")]
     public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimDto claimDto)
     {
@@ -159,13 +157,12 @@ public class AuthController : ControllerBase
 
         if (user == null)
         {
-            return NotFound(ErrorResponse.SendMessage(Errors.NotFound404));
+            return NotFound(new { message = Errors.NotFound404 });
         }
 
         await _userManager.RemoveClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
         return Ok();
     }
-
 
     [HttpGet("verify-account")]
     public async Task<IActionResult> VerifyAccount([FromQuery(Name = "verificationCode")] string verificationCode)
@@ -179,12 +176,12 @@ public class AuthController : ControllerBase
 
         if (user.EmailConfirmed)
         {
-            return BadRequest(ErrorResponse.SendMessage(Errors.Repetition));
+            return BadRequest(new { message = Errors.Repetition });
         }
 
         if (user.VerificationCode != verificationCode)
         {
-            return BadRequest(ErrorResponse.SendMessage(Errors.InvalidCredentials));
+            return BadRequest(new { message = Errors.InvalidCredentials });
         }
 
         user.EmailConfirmed = true;
@@ -232,7 +229,7 @@ public class AuthController : ControllerBase
 
         if (user.PasswordResetTokenExpiration <= DateTime.UtcNow.AddMinutes(10))
         {
-            return BadRequest(ErrorResponse.SendMessage(Errors.ExpiredToken));
+            return BadRequest(new { message = Errors.ExpiredToken });
         }
 
         var result =
@@ -240,7 +237,7 @@ public class AuthController : ControllerBase
 
         if (!result.Succeeded)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, ErrorResponse.SendMessage(Errors.Server500));
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = Errors.Server500 });
         }
 
         user.PasswordResetToken = null;
