@@ -10,7 +10,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 
     }
-    
+
 
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
@@ -18,18 +18,32 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Discount> Discounts { get; set; }
     public DbSet<Color> Colors { get; set; }
     public DbSet<Size> Sizes { get; set; }
-    public override DbSet<ApplicationUser> Users { get; set; }
-    
+    public new DbSet<ApplicationUser> Users { get; set; }
+    public DbSet<ProductCategory> ProductCategories { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Product>()
+            .HasMany(p => p.Images)
+            .WithOne(p => p.Product)
+            .HasForeignKey(p => p.ProductId);
+
+        modelBuilder.Entity<ProductCategory>(nestedBuilder =>
         {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Product>()
-                .HasMany(p => p.Images)
-                .WithOne(p => p.Product)
+            nestedBuilder.HasKey(p => new { p.ProductId, p.CategoryId });
+            nestedBuilder.HasOne(p => p.Product)
+                .WithMany(p => p.ProductCategories)
+                .HasForeignKey(p => p.CategoryId);
+            nestedBuilder.HasOne(p => p.Category)
+                .WithMany(p => p.ProductCategories)
                 .HasForeignKey(p => p.ProductId);
 
-        }
-    
+        });
+
+    }
+
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         var currentTime = DateTime.UtcNow;
@@ -47,11 +61,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                         case EntityState.Added:
                             baseEntity.CreatedAt = currentTime;
                             break;
-                        case EntityState.Detached: 
+                        case EntityState.Detached:
                             break;
                         case EntityState.Unchanged:
                             break;
-                        case EntityState.Modified: 
+                        case EntityState.Modified:
                             baseEntity.UpdatedAt = currentTime;
                             break;
                         case EntityState.Deleted:
@@ -85,5 +99,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
-    
+
 }

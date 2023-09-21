@@ -2,8 +2,6 @@ using Market.Utils.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace Market.OptionsSetup;
-
 public class AuthorizationOptionsSetup : IConfigureOptions<AuthorizationOptions>
 {
     public void Configure(AuthorizationOptions options)

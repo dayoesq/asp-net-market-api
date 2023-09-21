@@ -12,7 +12,6 @@ public class Product : BaseEntity
     [Required]
     [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} name must be between {2} and {1} characters.")]
     public string Name { get; set; } = null!;
-    public string? Brand { get; set; } = null!;
     [Required]
     [Column(TypeName = "decimal")]
     [Precision(18, 2)]
@@ -31,10 +30,13 @@ public class Product : BaseEntity
     public Size? Size { get; set; }
     public int? ColorId { get; set; }
     [ForeignKey(nameof(ColorId))]
-    [ValidateNever]
     public Color? Color { get; set; }
     [Column(TypeName = "decimal")]
     [Precision(18, 2)]
     public decimal? Weight { get; set; }
+    public int BrandId { get; set; }
+    [ForeignKey(nameof(BrandId))]
+    public Brand Brand { get; set; } = null!;
+    public ICollection<ProductCategory>? ProductCategories { get; set; }
 
 }

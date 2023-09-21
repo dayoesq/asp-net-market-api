@@ -13,5 +13,6 @@ public class Category : BaseEntity
     public string Name { get; set; } = null!;
     [Required]
     public string Description { get; set; } = null!;
+    public ICollection<ProductCategory>? ProductCategories { get; set; }
 
 }

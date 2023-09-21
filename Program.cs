@@ -4,25 +4,20 @@ using Market.AutoMapperProfiles;
 using Market.DataContext;
 using Market.Filters;
 using Market.Models;
-using Market.OptionsSetup;
 using Market.OptionsSetup.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add(typeof(TrimRequestStringsAttribute));
-    options.Filters.Add(typeof(GlobalExceptionFilter));
-    options.Filters.Add(typeof(BadRequestFilter));
-}).ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
+
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 
 builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
 
@@ -34,14 +29,7 @@ builder.Services.AddMvc(options =>
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddCors(options =>
-{
-    var clientBaseUrl = builder.Configuration.GetValue<string>("ClientBaseUrl");
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins(clientBaseUrl!).AllowAnyMethod().AllowAnyHeader();
-    });
-});
+builder.Services.AddCors();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -53,6 +41,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
+
         ValidateIssuer = true,
         ValidateAudience = false,
         ValidateLifetime = true,
@@ -64,9 +53,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
-builder.Services.AddSingleton(config => config.GetRequiredService<IOptions<JwtOptions>>().Value);
-
+// Options configurations
 builder.Services.ConfigureOptions<JwtOptionsSetup>();
+
+builder.Services.ConfigureOptions<ControllerOptionsSetup>();
+
+builder.Services.ConfigureOptions<CorsOptionsSetup>();
 
 builder.Services.ConfigureOptions<AuthorizationOptionsSetup>();
 
