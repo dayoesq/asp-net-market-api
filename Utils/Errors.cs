@@ -15,6 +15,6 @@ public static class Errors
 }
 public static class ResponseMessage
 {
-    public static string Success { get; set; } = "Operation successful.";
+    public static string Success { get; set; } = "Success.";
 
 }

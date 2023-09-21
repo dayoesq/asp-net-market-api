@@ -8,7 +8,7 @@ public class RegisterDto
     private string _firstName;
     private string _lastName;
     private string _email;
-    
+
     [Required]
     [MaxLength(25)]
     [MinLength(2)]
@@ -37,9 +37,9 @@ public class RegisterDto
 
     [Required]
     [MaxLength(60)]
-    public string Password { get; set; }
+    public string Password { get; set; } = null!;
 
     [Compare("Password", ErrorMessage = "Passwords do not match")]
-    public string PasswordConfirmation { get; set; }
-    
+    public string PasswordConfirmation { get; set; } = null!;
+
 }

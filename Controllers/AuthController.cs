@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 
@@ -27,19 +28,20 @@ public class AuthController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IMapper _mapper;
     private readonly ApplicationDbContext _context;
-    private readonly JwtOptions _jwtOptions;
+    private readonly JwtOptionSettings _jwtOptions;
 
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IMapper mapper, ApplicationDbContext context, JwtOptions jwtOptions)
+        IMapper mapper, ApplicationDbContext context, IOptions<JwtOptionSettings> jwtOptions)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _mapper = mapper;
         _context = context;
-        _jwtOptions = jwtOptions;
+        _jwtOptions = jwtOptions.Value;
+
 
     }
 
@@ -115,10 +117,10 @@ public class AuthController : ControllerBase
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("logout")]
-    public async Task<IActionResult> Logout()
+    public IActionResult Logout()
     {
-        await _signInManager.SignOutAsync();
-        return Ok();
+
+        return Ok(new { message = ResponseMessage.Success });
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]

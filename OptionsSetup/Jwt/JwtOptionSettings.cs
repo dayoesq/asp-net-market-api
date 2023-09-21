@@ -1,6 +1,6 @@
 namespace Market.OptionsSetup.Jwt;
 
-public class JwtOptions
+public class JwtOptionSettings
 {
     public string Issuer { get; init; } = string.Empty;
     public string Audience { get; init; } = string.Empty;
