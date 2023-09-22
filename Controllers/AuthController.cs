@@ -6,6 +6,8 @@ using AutoMapper;
 using Market.DataContext;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.Models.DTOS.Auths;
+using Market.Models.DTOS.Claims;
 using Market.OptionsSetup.Jwt;
 using Market.Utils;
 using Market.Utils.Constants;
@@ -152,7 +154,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
-    [HttpPost("remove-claim/{id}")]
+    [HttpDelete("remove-claim/{id}")]
     public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimDto claimDto)
     {
         var user = await _userManager.FindByIdAsync(id);

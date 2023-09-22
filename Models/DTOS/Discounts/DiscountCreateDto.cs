@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Market.Utils.Constants;
 
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Discounts;
 
 public class DiscountCreateDto
 {

@@ -1,4 +1,4 @@
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Sizes;
 
 public class SizeDto : BaseEntity
 {

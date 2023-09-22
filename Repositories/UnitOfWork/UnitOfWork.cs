@@ -1,12 +1,12 @@
-using Microsoft.EntityFrameworkCore;
+using Market.DataContext;
 
 namespace Market.Repositories.UnitOfWork;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly DbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public UnitOfWork(DbContext context)
+    public UnitOfWork(ApplicationDbContext context)
     {
         _context = context;
     }

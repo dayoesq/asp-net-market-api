@@ -181,3 +181,4 @@
 /Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/FluentEmail.Core.dll
 /Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/FluentEmail.Mailgun.dll
 /Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/Newtonsoft.Json.dll
+/Volumes/MacExtended/Projects/dotnet/Market/bin/Debug/net7.0/appsettings.Example.json

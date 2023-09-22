@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Market.Utils;
 
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Sizes;
 
 public class SizeCreateDto
 {
