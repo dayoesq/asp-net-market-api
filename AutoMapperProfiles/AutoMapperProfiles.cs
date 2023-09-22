@@ -1,7 +1,9 @@
 using AutoMapper;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.Models.DTOS.Auths;
 using Market.Models.DTOS.Discounts;
+using Market.Models.DTOS.Users;
 
 namespace Market.AutoMapperProfiles;
 

@@ -1,4 +1,4 @@
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Users;
 
 public class UserDto : BaseEntity
 {

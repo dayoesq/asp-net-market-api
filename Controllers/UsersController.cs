@@ -1,6 +1,7 @@
 using AutoMapper;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.Models.DTOS.Users;
 using Market.Repositories;
 using Market.Repositories.UnitOfWork;
 using Market.Utils;

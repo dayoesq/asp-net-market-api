@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Auths;
 
 public class LoginDto
 {
