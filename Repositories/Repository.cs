@@ -1,23 +1,24 @@
 using System.Linq.Expressions;
+using Market.DataContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace Market.Repositories;
 
-public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
 {
-    private readonly DbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public Repository(DbContext context)
+    public Repository(ApplicationDbContext context)
     {
         _context = context;
     }
     
-    public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
+    public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null)
     {
         return await _context.Set<TEntity>().ToListAsync();
     }
 
-    public async Task<TEntity?> GetByIdAsync(int id)
+    public async Task<TEntity?> GetAsync(TKey id)
     {
         return await _context.Set<TEntity>().FindAsync(id);
     }
@@ -29,16 +30,16 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
         return entity;
     }
     
-    public async Task<TEntity> UpdateAsync(int id, TEntity entity)
+    public async Task<TEntity> UpdateAsync(TKey id, TEntity entity)
     {
         _context.Entry(entity).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(TKey id)
     {
-        var entity = await GetByIdAsync(id);
+        var entity = await GetAsync(id);
         if (entity == null)
             return false;
 

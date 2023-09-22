@@ -1,11 +1,12 @@
 using AutoMapper;
-using Market.DataContext;
+using Market.Models;
 using Market.Models.DTOS;
+using Market.Repositories;
+using Market.Repositories.UnitOfWork;
 using Market.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Market.Controllers;
 
@@ -13,21 +14,22 @@ namespace Market.Controllers;
 [Route("[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IRepository<ApplicationUser, string> _userRepository;
     private readonly IMapper _mapper;
 
-    public UsersController(ApplicationDbContext context, IMapper mapper)
+    public UsersController(IMapper mapper, IUnitOfWork unitOfWork, IRepository<ApplicationUser, string> userRepository)
     {
-        _context = context;
         _mapper = mapper;
-
+        _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
     [HttpGet(Name = "get-users")]
     public async Task<IActionResult> GetUsers()
     {
-        var users = await _context.Users.ToListAsync();
+        var users = await _userRepository.GetAllAsync();
         var result = _mapper.Map<List<UserDto>>(users);
         return Ok(result);
     }
@@ -36,7 +38,7 @@ public class UsersController : ControllerBase
     [HttpGet("{id}", Name = "get-user")]
     public async Task<IActionResult> GetUser(string id)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        var user = await _userRepository.GetAsync(id);
         if (user == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<UserDto>(user);
         return Ok(result);
@@ -47,10 +49,9 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}", Name = "delete-user")]
     public async Task<IActionResult> DeleteUser(string id)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        if (user == null) return NotFound(new { message = Errors.NotFound404 });
-        _context.Remove(user);
-        await _context.SaveChangesAsync();
+        var user = await _userRepository.DeleteAsync(id);
+        if (!user) return NotFound(new { message = Errors.NotFound404 });
+        await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
 
     }

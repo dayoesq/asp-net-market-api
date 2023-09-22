@@ -1,6 +1,7 @@
 using AutoMapper;
 using Market.Models;
 using Market.Models.DTOS;
+using Market.Models.DTOS.Discounts;
 
 namespace Market.AutoMapperProfiles;
 
@@ -10,7 +11,6 @@ public class AutoMapperProfiles : Profile
     {
         CreateMap<RegisterDto, ApplicationUser>()
         .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
-        CreateMap<ProductCreateDto, Product>().ReverseMap();
         CreateMap<ApplicationUser, UserDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
@@ -27,9 +27,6 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
             .ReverseMap(); 
         CreateMap<DiscountCreateDto, Discount>().ReverseMap();
-        CreateMap<ProductImageCreateDto, ProductImage>().ReverseMap();
-        CreateMap<CategoryCreateDto, Category>().ReverseMap();
-        CreateMap<CategoryUpdateDto, Category>().ReverseMap();
         CreateMap<Discount, DiscountDto>().ReverseMap();
         CreateMap<DiscountUpdateDto, Discount>().ReverseMap();
     }
