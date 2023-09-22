@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using AutoMapper;
 using Market.DataContext;
 using Market.Models;
-using Market.Models.DTOS;
 using Market.Models.DTOS.Auths;
 using Market.Models.DTOS.Claims;
 using Market.OptionsSetup.Jwt;

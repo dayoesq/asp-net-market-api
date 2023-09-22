@@ -1,5 +1,4 @@
 using AutoMapper;
-using Market.Models.DTOS;
 using Microsoft.AspNetCore.Mvc;
 using Market.Models;
 using Market.Models.DTOS.Discounts;
@@ -12,6 +11,7 @@ using Market.Utils.Constants;
 
 namespace Market.Controllers;
 
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
 [ApiController]
 [Route("[controller]")]
 public class DiscountsController : ControllerBase
@@ -28,8 +28,7 @@ public class DiscountsController : ControllerBase
         _discountRepository = discountRepository;
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
-    [HttpPost]
+    [HttpPost(Name = "create-discount")]
     public async Task<IActionResult> CreateDiscount([FromBody] DiscountCreateDto model)
     {
         var discount = _mapper.Map<Discount>(model);
@@ -38,7 +37,8 @@ public class DiscountsController : ControllerBase
         return CreatedAtAction(nameof(CreateDiscount), new { id = createdDiscount.Id }, discount);
     }
 
-    [HttpGet]
+    [AllowAnonymous]
+    [HttpGet(Name = "get-discounts")]
     public async Task<IActionResult> GetDiscounts()
     {
         var discounts = await _discountRepository.GetAllAsync();
@@ -47,7 +47,8 @@ public class DiscountsController : ControllerBase
 
     }
 
-    [HttpGet("{id:int}")]
+    [AllowAnonymous]
+    [HttpGet("{id:int}", Name = "get-discount")]
     public async Task<IActionResult> GetDiscount(int id)
     {
         var discount = await _discountRepository.GetAsync(id);
@@ -59,8 +60,7 @@ public class DiscountsController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:int}", Name = "update-discount")]
     public async Task<IActionResult> UpdateDiscount(int id, [FromBody] DiscountUpdateDto model)
     {
         var existingDiscount = await _discountRepository.GetAsync(id);
@@ -81,8 +81,7 @@ public class DiscountsController : ControllerBase
 
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.Super)]
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id:int}", Name = "delete-discount")]
     public async Task<IActionResult> DeleteDiscount(int id)
     {
         var existingDiscount = await _discountRepository.GetAsync(id);

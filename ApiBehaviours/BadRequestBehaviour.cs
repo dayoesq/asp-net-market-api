@@ -8,12 +8,19 @@ public static class BadRequestBehaviour
     {
         options.InvalidModelStateResponseFactory = context =>
         {
-            var response = (
-                from key in context.ModelState.Keys let modelErrorCollection = context.ModelState[key]?.Errors 
-                where modelErrorCollection != null from error 
-                    in modelErrorCollection select $"{key}: {error.ErrorMessage}").ToList();
+            var response = new Dictionary<string, List<string>>();
 
-            return new BadRequestObjectResult(response);
+            foreach (var key in context.ModelState.Keys)
+            {
+                var modelErrorCollection = context.ModelState[key]?.Errors;
+                if (modelErrorCollection != null)
+                {
+                    var errorMessages = modelErrorCollection.Select(error => error.ErrorMessage).ToList();
+                    response[key] = errorMessages;
+                }
+            }
+
+            return new BadRequestObjectResult(new { message = response });
         };
     }
 }
