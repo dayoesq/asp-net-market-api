@@ -39,15 +39,17 @@ Before using the E-Commerce Web API, make sure you have the following prerequisi
 
 2. Open the solution in Visual Studio.
 
-3. Configure the connection string in the `appsettings.json` file to point to your SQL Server database.
+3. Replace the values in the `appsettings.Example.json` with your values and rename it as your default configuration file.
 
-4. Run the following commands in the Package Manager Console to create the database schema and seed initial data:
+4. Configure the connection string in the `appsettings.json` file to point to your SQL Server database.
+
+5. Run the following commands in the Package Manager Console to create the database schema and seed initial data:
 
     ```shell
     Update-Database
     ```
 
-5. Build and run the application.
+6. Build and run the application.
 
 ## 3. Configuration
 

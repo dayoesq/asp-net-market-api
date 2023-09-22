@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Market.Utils.Constants;
 
+namespace Market.Utils;
+
 public static class HttpContextExtensions
 {
     public static ClaimsPrincipal AuthUser(this HttpContext httpContext)

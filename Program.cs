@@ -5,6 +5,8 @@ using Market.DataContext;
 using Market.Filters;
 using Market.Models;
 using Market.OptionsSetup.Jwt;
+using Market.Repositories;
+using Market.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
 
 builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 builder.Services.AddMvc(options =>
 {

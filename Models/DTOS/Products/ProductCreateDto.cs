@@ -9,7 +9,6 @@ namespace Market.Models.DTOS;
 public class ProductCreateDto
 {
     private string _name;
-    private string _brand;
 
     [Required]
     [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} name must be between {2} and {1} characters.")]
@@ -18,26 +17,20 @@ public class ProductCreateDto
         get => _name;
         set => _name = Helper.ToTitleCase(value);
     }
-
-    public string Brand
-    {
-        get => _brand;
-        set => _brand = Helper.ToTitleCase(value);
-    }
-
     [Required]
     [Column(TypeName = "decimal")]
     [Precision(18, 2)]
     public decimal Price { get; set; }
-
     [Required]
     public string Description { get; set; } = null!;
-    public string? Identification { get; set; }
-    public ICollection<ProductImage>? Images { get; set; }
-    public int? DiscountId { get; set; }
-    [ForeignKey(nameof(DiscountId))]
-    public Discount? Discount { get; set; }
     [Required]
-    public ICollection<Category>? Categories { get; set; }
+    public int ProductTypeId { get; set; }
+    [ForeignKey(nameof(ProductTypeId))]
+    public ProductType ProductType { get; set; } = null!;
+    public int BrandId { get; set; }
+    [ForeignKey(nameof(BrandId))]
+    public Brand Brand { get; set; } = null!;
+    public ICollection<Category> Categories { get; set; } = null!;
+    public ICollection<ProductCategory>? ProductCategories { get; set; }
 
 }
