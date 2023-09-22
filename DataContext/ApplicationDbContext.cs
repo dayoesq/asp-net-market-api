@@ -25,22 +25,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Product>()
-            .HasMany(p => p.Images)
-            .WithOne(p => p.Product)
-            .HasForeignKey(p => p.ProductId);
+        // modelBuilder.Entity<Product>()
+        //     .HasMany(p => p.Images)
+        //     .WithOne(p => p.Product)
+        //     .HasForeignKey(p => p.ProductId);
 
-        modelBuilder.Entity<ProductCategory>(nestedBuilder =>
-        {
-            nestedBuilder.HasKey(p => new { p.ProductId, p.CategoryId });
-            nestedBuilder.HasOne(p => p.Product)
-                .WithMany(p => p.ProductCategories)
-                .HasForeignKey(p => p.CategoryId);
-            nestedBuilder.HasOne(p => p.Category)
-                .WithMany(p => p.ProductCategories)
-                .HasForeignKey(p => p.ProductId);
+        // modelBuilder.Entity<ProductCategory>(nestedBuilder =>
+        // {
+        //     nestedBuilder.HasKey(p => new { p.ProductId, p.CategoryId });
+        //     nestedBuilder.HasOne(p => p.Product)
+        //         .WithMany(p => p.ProductCategories)
+        //         .HasForeignKey(p => p.CategoryId);
+        //     nestedBuilder.HasOne(p => p.Category)
+        //         .WithMany(p => p.ProductCategories)
+        //         .HasForeignKey(p => p.ProductId);
 
-        });
+        // });
 
     }
 

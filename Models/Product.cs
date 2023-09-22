@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Market.Utils.Constants;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Market.Models;
@@ -21,6 +20,10 @@ public class Product : BaseEntity
     public string Description { get; set; } = null!;
     public string? Identification { get; set; }
     public ICollection<ProductImage>? Images { get; set; }
+    [Column(TypeName = "decimal")]
+    [Precision(18, 2)]
+    public decimal? Weight { get; set; }
+    // Navigation properties start here
     public int? DiscountId { get; set; }
     [ForeignKey(nameof(DiscountId))]
     public Discount? Discount { get; set; }
@@ -31,12 +34,12 @@ public class Product : BaseEntity
     public int? ColorId { get; set; }
     [ForeignKey(nameof(ColorId))]
     public Color? Color { get; set; }
-    [Column(TypeName = "decimal")]
-    [Precision(18, 2)]
-    public decimal? Weight { get; set; }
     public int BrandId { get; set; }
     [ForeignKey(nameof(BrandId))]
     public Brand Brand { get; set; } = null!;
     public ICollection<ProductCategory>? ProductCategories { get; set; }
+    public int ProductTypeId { get; set; }
+    [ForeignKey(nameof(ProductTypeId))]
+    public ProductType ProductType { get; set; } = null!;
 
 }
