@@ -30,7 +30,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetUsers()
     {
         var users = await _userRepository.GetAllAsync();
-        var result = _mapper.Map<List<UserDto>>(users);
+        var result = _mapper.Map<IEnumerable<UserDto>>(users);
         return Ok(result);
     }
 

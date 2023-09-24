@@ -27,12 +27,20 @@ public class SizesController : ControllerBase
         _sizeRepository = sizeRepository;
     }
 
+    public async Task<IActionResult> CreateSize([FromBody] SizeUpsertDto model)
+    {
+        var size = _mapper.Map<Size>(model);
+        var createdSize = await _sizeRepository.CreateAsync(size);
+        await _unitOfWork.CommitAsync();
+        return CreatedAtAction(nameof(CreateSize), new { id = createdSize.Id }, size);
+    }
+
     [AllowAnonymous]
     [HttpGet(Name = "get-sizes")]
     public async Task<IActionResult> GetSizes()
     {
         var sizes = await _sizeRepository.GetAllAsync();
-        var result = _mapper.Map<List<SizeDto>>(sizes);
+        var result = _mapper.Map<IEnumerable<SizeDto>>(sizes);
         return Ok(result);
     }
 

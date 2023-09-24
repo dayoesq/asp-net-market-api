@@ -29,7 +29,7 @@ public class DiscountsController : ControllerBase
     }
 
     [HttpPost(Name = "create-discount")]
-    public async Task<IActionResult> CreateDiscount([FromBody] DiscountCreateDto model)
+    public async Task<IActionResult> CreateDiscount([FromBody] DiscountUpsertDto model)
     {
         var discount = _mapper.Map<Discount>(model);
         var createdDiscount = await _discountRepository.CreateAsync(discount);
@@ -52,29 +52,17 @@ public class DiscountsController : ControllerBase
     public async Task<IActionResult> GetDiscount(int id)
     {
         var discount = await _discountRepository.GetAsync(id);
-        if (discount == null)
-        {
-            return NotFound(new { message = Errors.NotFound404 });
-        }
+        if (discount == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<Discount, DiscountDto>(discount);
         return Ok(result);
     }
 
     [HttpPut("{id:int}", Name = "update-discount")]
-    public async Task<IActionResult> UpdateDiscount(int id, [FromBody] DiscountUpdateDto model)
+    public async Task<IActionResult> UpdateDiscount(int id, [FromBody] DiscountUpsertDto model)
     {
         var existingDiscount = await _discountRepository.GetAsync(id);
-
-        if (existingDiscount == null)
-        {
-            return NotFound(new { message = Errors.NotFound404 });
-        }
-
-        if (existingDiscount.Code == model.Code.ToUpper())
-        {
-            return Conflict(new { message = Errors.Conflict409 });
-        }
-
+        if (existingDiscount == null) return NotFound(new { message = Errors.NotFound404 });
+        if (existingDiscount.Code == model.Code.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingDiscount);
         await _unitOfWork.CommitAsync();
         return Ok(result);
