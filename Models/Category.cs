@@ -1,19 +1,17 @@
 using System.ComponentModel.DataAnnotations;
-using Market.Utils;
 using Market.Utils.Constants;
+using Microsoft.EntityFrameworkCore;
 
-namespace Market.Models.DTOS.Colors;
+namespace Market.Models;
 
-public class ColorCreateDto
+[Index(nameof(Name), IsUnique = true)]
+public class Category : BaseEntity
 {
-    private string _name;
     public int Id { get; set; }
-
     [Required]
     [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
-    public string Name
-    {
-        get => _name;
-        set => _name = Helper.ToTitleCase(value);
-    }
+    public string Name { get; set; } = null!;
+    [Required]
+    public string Description { get; set; } = null!;
+
 }

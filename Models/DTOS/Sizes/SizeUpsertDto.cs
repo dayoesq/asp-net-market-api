@@ -3,7 +3,7 @@ using Market.Utils;
 
 namespace Market.Models.DTOS.Sizes;
 
-public class SizeCreateDto
+public class SizeUpsertDto
 {
     private string _size;
     

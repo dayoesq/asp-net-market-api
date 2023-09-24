@@ -3,11 +3,11 @@ using Market.Utils;
 
 namespace Market.Models.DTOS.Categories;
 
-public class CategoryCreateDto
+public class CategoryUpsertDto
 {
     private string _name;
-    
-    
+
+
     [Required]
     [StringLength(50, MinimumLength = 2, ErrorMessage = "{0} must be between {2} and {1} characters.")]
     public string Name
@@ -16,6 +16,6 @@ public class CategoryCreateDto
         set => _name = Helper.ToTitleCase(value);
 
     }
-    public string? Description { get; set; }
-    
+    public string Description { get; set; } = null!;
+
 }
