@@ -126,7 +126,7 @@ public class AuthController : ControllerBase
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
     [HttpPost("assign-claim/{id}")]
-    public async Task<IActionResult> AssignClaim(string id, [FromBody] ClaimDto claimDto)
+    public async Task<IActionResult> AssignClaim(string id, [FromBody] ClaimUpsertDto claimDto)
     {
 
         var user = await _userManager.FindByIdAsync(id);
@@ -154,7 +154,7 @@ public class AuthController : ControllerBase
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
     [HttpDelete("remove-claim/{id}")]
-    public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimDto claimDto)
+    public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimUpsertDto claimDto)
     {
         var user = await _userManager.FindByIdAsync(id);
 

@@ -32,5 +32,12 @@ public class ProductUpsertDto
     [ForeignKey(nameof(BrandId))]
     public Brand Brand { get; set; } = null!;
     public int CategoryId { get; set; }
+    [ForeignKey(nameof(CategoryId))]
+    public Category Category { get; set; } = null!;
+    public int? DiscountId { get; set; }
+    [ForeignKey(nameof(DiscountId))]
+    public Category? Discount { get; set; }
+    public ICollection<ProductImage>? Images { get; set; }
+
 
 }
