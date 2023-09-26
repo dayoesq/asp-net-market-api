@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Market.Utils;
+using Market.Utils.Constants;
 
 namespace Market.Models.DTOS.Auths;
 
@@ -10,8 +11,7 @@ public class RegisterDto
     private string _email;
 
     [Required]
-    [MaxLength(25)]
-    [MinLength(2)]
+    [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
     public string FirstName
     {
         get => _firstName;
@@ -19,8 +19,7 @@ public class RegisterDto
     }
 
     [Required]
-    [MaxLength(25)]
-    [MinLength(2)]
+    [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
     public string LastName
     {
         get => _lastName;
@@ -36,7 +35,7 @@ public class RegisterDto
     }
 
     [Required]
-    [MaxLength(60)]
+    [StringLength(60, MinimumLength = 10, ErrorMessage = "{0} must be between {2} and {1} characters.")]
     public string Password { get; set; } = null!;
 
     [Compare("Password", ErrorMessage = "Passwords do not match")]

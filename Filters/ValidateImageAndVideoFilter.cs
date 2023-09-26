@@ -45,7 +45,6 @@ namespace Market.Filters;
                 return false;
             }
                
-
             if (!allowedExtensions.ContainsKey(extension))
             {
                 return false;
