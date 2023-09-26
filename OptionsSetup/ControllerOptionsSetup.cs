@@ -11,5 +11,6 @@ public class ControllerOptionsSetup : IConfigureOptions<MvcOptions>
         options.Filters.Add(typeof(TrimRequestStringsAttribute));
         options.Filters.Add(typeof(GlobalExceptionFilter));
         options.Filters.Add(typeof(BadRequestFilter));
+        options.Filters.Add(typeof(ValidateImageAndVideoFilterAttribute));
     }
 }

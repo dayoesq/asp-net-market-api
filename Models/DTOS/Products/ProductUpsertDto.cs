@@ -4,7 +4,7 @@ using Market.Utils;
 using Market.Utils.Constants;
 using Microsoft.EntityFrameworkCore;
 
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Products;
 
 public class ProductUpsertDto
 {

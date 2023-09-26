@@ -1,4 +1,4 @@
-namespace Market.Models.DTOS;
+namespace Market.Models.DTOS.Products;
 
 public class ProductDto : BaseEntity
 {
