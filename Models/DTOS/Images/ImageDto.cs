@@ -1,6 +1,6 @@
 namespace Market.Models.DTOS.ProductImages;
 
-public class ProductImageDto : BaseEntity
+public class ImageDto : BaseEntity
 {
 
     public int Id { get; set; }

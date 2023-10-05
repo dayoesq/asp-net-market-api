@@ -4,7 +4,7 @@ using Market.Utils.Constants;
 
 namespace Market.Models.DTOS.ProductImages;
 
-public class ProductImageUpsertDto
+public class ImageUpsertDto
 {
     [Required]
     [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
