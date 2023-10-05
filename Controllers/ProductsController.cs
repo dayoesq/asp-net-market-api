@@ -30,42 +30,7 @@ public class ProductsController : ControllerBase
         _webHost = webHost;
     }
 
-    [HttpPost(Name = "create-product")]
-    [ValidateImageAndVideoFilter]
-    public async Task<IActionResult> CreateProduct([FromForm] ProductUpsertDto model, List<IFormFile>? files)
-    {
-        var product = _mapper.Map<Product>(model);
-        await _productRepository.CreateAsync(product);
-        await _unitOfWork.CommitAsync();
-        if (files == null) return BadRequest(new {message = "Please provide images."});
-        foreach (var file in files)
-        {
-            var webRootPath = _webHost.WebRootPath;
-            var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-            var productPath = $"images/products/product-{product.Id}";
-            var finalPath = Path.Combine(webRootPath, productPath);
-
-            if (Directory.Exists(finalPath)) continue;
-            Directory.CreateDirectory(finalPath);
-            await using var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create);
-            await file.CopyToAsync(fileStream);
-
-            var productImage = new ProductImage
-            {
-                Url = $"{productPath}{fileName}",
-                ProductId = product.Id
-            };
-
-            if (product.Images != null) continue;
-            product.Images = new List<ProductImage>();
-            product.Images!.Add(productImage);
-            await _unitOfWork.CommitAsync();
-            return CreatedAtAction(nameof(CreateProduct), new { id = product.Id }, product);
-        }
-
-        return BadRequest(new {message = Errors.Server500});
-
-    }
+    
 
     [AllowAnonymous]
     [HttpGet(Name = "get-Products")]

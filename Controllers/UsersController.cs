@@ -4,9 +4,11 @@ using Market.Models.DTOS.Users;
 using Market.Repositories;
 using Market.Repositories.UnitOfWork;
 using Market.Utils;
+using Market.Utils.Constants;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Market.Controllers;
 
@@ -25,7 +27,7 @@ public class UsersController : ControllerBase
         _userRepository = userRepository;
     }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.Admin)]
     [HttpGet(Name = "get-users")]
     public async Task<IActionResult> GetUsers()
     {
@@ -41,6 +43,17 @@ public class UsersController : ControllerBase
         var user = await _userRepository.GetAsync(id);
         if (user == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<UserDto>(user);
+        return Ok(result);
+
+    }
+    
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("{id}", Name = "update-user")]
+    public async Task<IActionResult> UpdateUser(string id, [FromForm] UserUpdateDto model)
+    {
+        var user = await _userRepository.GetAsync(id);
+        if (user == null) return NotFound(new { message = Errors.NotFound404 });
+        var result = _mapper.Map(model, user);
         return Ok(result);
 
     }

@@ -15,15 +15,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Color> Colors { get; set; }
     public DbSet<Size> Sizes { get; set; }
     public DbSet<ProductType> ProductTypes { get; set; }
-    public DbSet<ProductImage> ProductImages { get; set; }
+    public DbSet<Image> Images { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+    public DbSet<AccountVerification> AccountVerifications { get; set; }
     public new DbSet<ApplicationUser> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)

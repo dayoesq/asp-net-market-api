@@ -1,19 +1,27 @@
+using System.Security.Cryptography;
+
 namespace Market.Utils;
 
 public static class Helper
 {
-    public static string GenerateRandomNumber(int numberOfDigits)
+    
+    public static long GenerateRandomNumber(int numberOfDigits)
     {
-        if (numberOfDigits is <= 0 or > 10)
+        if (numberOfDigits <= 0)
         {
-            throw new ArgumentException("The number of digits must be between 1 and 10");
+            throw new ArgumentException("Please provide some numbers.");
         }
 
-        var random = new Random();
-        var maxNumber = (int)Math.Pow(11, numberOfDigits) - 1;
-        var randomNumber = random.Next(0, maxNumber);
+        var rng = RandomNumberGenerator.Create();
+        var bytes = new byte[numberOfDigits];
 
-        return randomNumber.ToString($"D{numberOfDigits}");
+        rng.GetBytes(bytes);
+        
+        var maxNumber = (int)Math.Pow(10, numberOfDigits);
+        var randomValue = BitConverter.ToInt32(bytes, 0) % maxNumber;
+
+        return randomValue;
+
     }
     
     public static string ToTitleCase(string input)

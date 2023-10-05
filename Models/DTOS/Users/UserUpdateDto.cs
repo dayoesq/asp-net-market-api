@@ -1,26 +1,33 @@
 using System.ComponentModel.DataAnnotations;
+using Market.Utils;
 using Market.Utils.Constants;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
-namespace Market.Models;
+namespace Market.Models.DTOS.Users;
 
-
-[Index(nameof(Email), IsUnique = true)]
-public class ApplicationUser : IdentityUser
+public class UserUpdateDto : BaseEntity
 {
+    private string _firstName;
+    private string _lastName;
+
     [Required]
     [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
-    public string FirstName { get; set; } = null!;
+    public string FirstName
+    {
+        get => _firstName;
+        set => _firstName = Helper.ToTitleCase(value);
+    }
+
     [Required]
     [StringLength(Constants.MaxLength, MinimumLength = Constants.MinLength, ErrorMessage = "{0} must be between {2} and {1} characters.")]
-    public string LastName { get; set; } = null!;
+    public string LastName
+    {
+        get => _lastName;
+        set => _lastName = Helper.ToTitleCase(value);
+    }
+
     public string? Address { get; set; }
+    public string? PostalCode { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; }
-    public string? PostalCode { get; set; }
-    public string? AvatarUrl { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public DateTime? LastLogin { get; set; }
+
 }

@@ -30,18 +30,20 @@ public class AuthController : ControllerBase
     private readonly IMapper _mapper;
     private readonly ApplicationDbContext _context;
     private readonly JwtOptionSettings _jwtOptions;
+    private readonly ILogger<AuthController> _logger;
 
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IMapper mapper, ApplicationDbContext context, IOptions<JwtOptionSettings> jwtOptions)
+        IMapper mapper, ApplicationDbContext context, IOptions<JwtOptionSettings> jwtOptions, ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _mapper = mapper;
         _context = context;
         _jwtOptions = jwtOptions.Value;
+        _logger = logger;
 
 
     }
@@ -50,69 +52,72 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
 
-        if (!Regex.IsMatch(registerDto.FirstName, Constants.NamePattern) &&
-            !Regex.IsMatch(registerDto.LastName, Constants.NamePattern))
+        try
         {
-            return BadRequest(new { message = Errors.InvalidFormat + " name format" });
+            if (!Regex.IsMatch(registerDto.FirstName, Constants.NamePattern) &&
+                !Regex.IsMatch(registerDto.LastName, Constants.NamePattern))
+            {
+                return BadRequest(new { message = Errors.InvalidFormat + " name format" });
+            }
+
+            var user = _mapper.Map<ApplicationUser>(registerDto);
+            var randomInt = Helper.GenerateRandomNumber(10);
+
+            var accountVerification = new AccountVerification { Email = user.Email!, Code = (int)randomInt };
+
+            await _userManager.CreateAsync(user, registerDto.Password);
+            
+            var claims = new List<Claim>
+            {
+                new(CustomClaimTypes.Sub, user.Id),
+                new(CustomClaimTypes.Roles, Roles.User),
+            };
+            
+            await _userManager.AddClaimsAsync(user, claims);
+            _context.AccountVerifications.Add(accountVerification);
+            await _context.SaveChangesAsync();
+            // Send mail token to user.
+            return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
         }
-
-        var currentUser = _userManager.FindByEmailAsync(registerDto.Email);
-        if (currentUser.Result?.Email?.ToUpperInvariant() == registerDto.Email.ToUpperInvariant())
+        catch (Exception e)
         {
-            return Conflict(new { message = Errors.Conflict409 });
+            _logger.LogCritical($"{Errors.Server500}-{e.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
-
-        var user = _mapper.Map<ApplicationUser>(registerDto);
-        user.VerificationCode = Helper.GenerateRandomNumber(8);
-        user.IsVerified = false;
-        user.EmailConfirmed = false;
-
-        var result = await _userManager.CreateAsync(user, registerDto.Password);
-
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.Errors);
-        }
-
-        var claims = new List<Claim>
-        {
-            new(CustomClaimTypes.Sub, user.Id),
-            new(CustomClaimTypes.Roles, Roles.User),
-        };
-
-        await _userManager.AddClaimsAsync(user, claims);
-        await _context.SaveChangesAsync();
-        return StatusCode(StatusCodes.Status201Created);
     }
 
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto auth)
     {
-        var user = await _userManager.FindByEmailAsync(auth.Email);
-
-        if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
+        try
         {
-            return Unauthorized(new { message = Errors.InvalidCredentials });
-        }
+            var user = await _userManager.FindByEmailAsync(auth.Email);
+        
+            if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
+            {
+                return Unauthorized(new { message = Errors.InvalidCredentials });
+            }
+        
+            if (!user.EmailConfirmed)
+            {
+                return BadRequest(new { message = Errors.UnverifiedAccount });
+            }
 
-        if (!user.EmailConfirmed)
-        {
-            return BadRequest(new { message = Errors.UnverifiedAccount });
-        }
-
-        var result =
             await _signInManager.PasswordSignInAsync(user, auth.Password, isPersistent: false, lockoutOnFailure: false);
-        if (!result.Succeeded)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new { message = Errors.Server500 });
-        }
-        var token = await GenerateJwtToken(user);
-        user.LastLogin = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-        return Ok(new { Token = token });
+            var token = await GenerateJwtToken(user);
+            user.LastLogin = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+            
+            return Ok(new { Token = token });
 
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical($"{Errors.Server500}-{e.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
 
     }
 
@@ -130,25 +135,13 @@ public class AuthController : ControllerBase
     {
 
         var user = await _userManager.FindByIdAsync(id);
-
-        if (user == null)
-        {
-            return NotFound(new { message = Errors.NotFound404 });
-        }
-
+        if (user == null) return NotFound(new { message = Errors.NotFound404 });
+       
         var existingClaims = await _userManager.GetClaimsAsync(user);
-
         var claimExists = existingClaims.Any(c => c.Type == claimDto.Type && c.Value == claimDto.Value);
-
-        if (!claimExists)
-        {
-            await _userManager.AddClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
-        }
-        else
-        {
-            return Conflict(new { message = Errors.Conflict409 });
-        }
-
+        if(claimExists) return Conflict(new { message = Errors.Conflict409 });
+        await _userManager.AddClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
+        
         return Ok();
     }
 
@@ -157,112 +150,101 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimUpsertDto claimDto)
     {
         var user = await _userManager.FindByIdAsync(id);
-
-        if (user == null)
-        {
-            return NotFound(new { message = Errors.NotFound404 });
-        }
-
+        if (user == null) return NotFound(new { message = Errors.NotFound404 });
         await _userManager.RemoveClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
+        
         return Ok();
     }
 
     [HttpGet("verify-account")]
-    public async Task<IActionResult> VerifyAccount([FromQuery(Name = "verificationCode")] string verificationCode)
+    public async Task<IActionResult> VerifyAccount([FromQuery(Name = "verificationCode")] int verificationCode)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(a => a.VerificationCode == verificationCode);
-
-        if (user == null)
+        try
         {
-            return NotFound();
+            var token = await _context.AccountVerifications.FirstOrDefaultAsync(a => a.Code == verificationCode);
+            
+            var user = _context.Users.FirstOrDefaultAsync(u => token != null && u.Email == token.Email);
+            var mappedUser = _mapper.Map<ApplicationUser>(user);
+            if (mappedUser.EmailConfirmed) return BadRequest(new { message = Errors.Repetition });
+            mappedUser.EmailConfirmed = true;
+            await _userManager.UpdateAsync(mappedUser);
+            
+            return Ok();
         }
-
-        if (user.EmailConfirmed)
+        catch (Exception e)
         {
-            return BadRequest(new { message = Errors.Repetition });
+            _logger.LogError($"{Errors.Server500}-{e.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = Errors.Server500 });
         }
-
-        if (user.VerificationCode != verificationCode)
-        {
-            return BadRequest(new { message = Errors.InvalidCredentials });
-        }
-
-        user.EmailConfirmed = true;
-        user.IsVerified = true;
-        user.VerificationCode = null;
-
-        var result = await _userManager.UpdateAsync(user);
-
-        return result.Succeeded ? Ok() : StatusCode(StatusCodes.Status500InternalServerError);
     }
 
     [HttpPost("request-password-reset")]
     public async Task<IActionResult> RequestPasswordReset([FromBody] PasswordResetRequestDto passwordResetRequestDto)
     {
         var user = await _userManager.FindByEmailAsync(passwordResetRequestDto.Email);
-        if (user == null)
-        {
-            return NotFound();
-        }
-
-        if ((bool)(!user.IsVerified)!)
-        {
-            return StatusCode(StatusCodes.Status401Unauthorized);
-        }
-
+        if (user == null) return NotFound();
+        if (!user.EmailConfirmed) return StatusCode(StatusCodes.Status401Unauthorized);
+        
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        user.PasswordResetToken = token;
-        user.PasswordResetTokenExpiration = DateTime.UtcNow.AddHours(24);
+        var existingToken = await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Email == user.Email);
+        if (existingToken != null) _context.Remove(existingToken);
+        
         await _context.SaveChangesAsync();
-
+        
+        var passwordResetToken = new PasswordResetToken
+        {
+            Email = user.Email!, Token = token, ExpiresAt = DateTime.UtcNow.AddHours(1), CreatedAt = DateTime.UtcNow
+        };
+        
+        _context.PasswordResetTokens.Add(passwordResetToken);
+        
+        await _context.SaveChangesAsync();
+        
         return Ok();
-
     }
+
 
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto passwordResetDto)
     {
-
-        var user = await _context.Users.FirstOrDefaultAsync(a =>
-            a.PasswordResetToken == passwordResetDto.PasswordResetToken);
-        if (user == null)
+        try
         {
-            return NotFound();
+            var token = await _context.PasswordResetTokens.FirstOrDefaultAsync(t =>
+                t.Token == passwordResetDto.PasswordResetToken);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email == token!.Email);
+            if (user == null) return NotFound();
+
+            if (token!.ExpiresAt <= DateTime.UtcNow.AddMinutes(5))
+                return BadRequest(new { message = Errors.ExpiredToken });
+            
+            await _userManager.ResetPasswordAsync(user, passwordResetDto.PasswordResetToken,
+                    passwordResetDto.Password);
+            _context.PasswordResetTokens.Remove(token);
+            
+            await _context.SaveChangesAsync();
+            
+            return Ok();
         }
-
-        if (user.PasswordResetTokenExpiration <= DateTime.UtcNow.AddMinutes(10))
+        catch (Exception e)
         {
-            return BadRequest(new { message = Errors.ExpiredToken });
-        }
-
-        var result =
-            await _userManager.ResetPasswordAsync(user, passwordResetDto.PasswordResetToken, passwordResetDto.Password);
-
-        if (!result.Succeeded)
-        {
+            _logger.LogError($"{Errors.Server500}-{e.Message}");
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = Errors.Server500 });
         }
-
-        user.PasswordResetToken = null;
-        user.PasswordResetTokenExpiration = null;
-        await _context.SaveChangesAsync();
-
-        return Ok();
     }
 
     private async Task<IEnumerable<Claim>> AddDefaultClaimsToUser(ApplicationUser user)
     {
         var claims = await _userManager.GetClaimsAsync(user);
-        if (claims.Count <= 0)
+        if (claims.Count > 0) return claims;
+        claims = new List<Claim>
         {
-            claims = new List<Claim>
-            {
-                new(CustomClaimTypes.Sub, user.Id),
-                new(CustomClaimTypes.Roles, Roles.User),
-            };
+            new(CustomClaimTypes.Sub, user.Id),
+            new(CustomClaimTypes.Roles, Roles.User),
+        };
 
-            await _userManager.AddClaimsAsync(user, claims);
-        }
+        await _userManager.AddClaimsAsync(user, claims);
         return claims;
     }
 
