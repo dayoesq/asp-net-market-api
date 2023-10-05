@@ -37,7 +37,6 @@ public class ProductUpsertDto
     public int? DiscountId { get; set; }
     [ForeignKey(nameof(DiscountId))]
     public Category? Discount { get; set; }
-    public ICollection<ProductImage>? Images { get; set; }
-
+    public ICollection<string>? ImageUrls { get; set; }
 
 }
