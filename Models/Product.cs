@@ -19,7 +19,8 @@ public class Product : BaseEntity
     [MinLength(Constants.MinLength)]
     public string Description { get; set; } = null!;
     public string? Identification { get; set; }
-    public ICollection<string>? ImageUrls { get; set; }
+    [NotMapped]
+    public ICollection<string> ImageUrls { get; set; } = new List<string>();
     [Column(TypeName = "decimal")]
     [Precision(18, 2)]
     public decimal? Weight { get; set; }

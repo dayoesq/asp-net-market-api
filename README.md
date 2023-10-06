@@ -81,8 +81,11 @@ Here are some sample API requests using `curl`:
 
 ```shell
 curl -X POST -H "Content-Type: application/json" -d '{
-  "email": "user@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
   "password": "securepassword"
+  "passwordConfirmation": "securepassword"
 }' http://localhost:5000/api/v1/auth/register
 ```
 
@@ -90,7 +93,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
 ```shell
 curl -X POST -H "Content-Type: application/json" -d '{
-  "email": "user@example.com",
+  "email": "john.doe@example.com",
   "password": "securepassword"
 }' http://localhost:5000/api/v1/auth/login
 ```
@@ -102,6 +105,8 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_
   "name": "Product Name",
   "price": 19.99,
   "description": "Product description"
+  "categoryId": "1"
+  "productTypeId": "1"
 }' http://localhost:5000/api/v1/products
 ```
 

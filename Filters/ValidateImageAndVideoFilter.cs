@@ -39,17 +39,11 @@ namespace Market.Filters;
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             var fileSize = file.Length;
-
-            if (fileSize < minFileSize || fileSize > maxFileSize)
-            {
-                return false;
-            }
+            
+            if (fileSize < minFileSize || fileSize > maxFileSize) return false;
                
-            if (!allowedExtensions.ContainsKey(extension))
-            {
-                return false;
-            }
-
+            if (!allowedExtensions.ContainsKey(extension)) return false;
+       
             using var stream = file.OpenReadStream();
             using var reader = new BinaryReader(stream);
             var headerBytes = reader.ReadBytes(validSignatures.Max(a => a.Value[0].Length));
