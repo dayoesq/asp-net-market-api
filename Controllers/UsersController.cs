@@ -48,7 +48,7 @@ public class UsersController : ControllerBase
     }
     
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpGet("{id}", Name = "update-user")]
+    [HttpPut("{id}", Name = "update-user")]
     public async Task<IActionResult> UpdateUser(string id, [FromForm] UserUpdateDto model)
     {
         var user = await _userRepository.GetAsync(id);

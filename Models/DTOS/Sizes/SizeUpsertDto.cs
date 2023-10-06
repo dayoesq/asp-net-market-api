@@ -1,18 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using Market.Utils;
+using Market.Utils.Constants;
 
 namespace Market.Models.DTOS.Sizes;
 
 public class SizeUpsertDto
 {
-    private string _size;
-    
-    public int Id { get; set; }
+    private string _productSize;
 
-    [Required]
-    public string Name
+    [StringLength(Constants.MaxLength, ErrorMessage = "{0} cannot be longer than {1} characters.")]
+    public string ProductSize
     {
-        get => _size;
-        set => _size = Helper.ToUpper(value);
+        get => _productSize;
+        set => _productSize = Helper.ToUpper(value);
     }
 }

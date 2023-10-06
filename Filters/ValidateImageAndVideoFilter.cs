@@ -15,6 +15,12 @@ namespace Market.Filters;
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
+            
+            if (!context.HttpContext.Request.HasFormContentType)
+            {
+                context.Result = new BadRequestObjectResult("Invalid Content-Type. Use 'multipart/form-data' for file uploads.");
+                return;
+            }
             var files = context.HttpContext.Request.Form.Files;
 
             foreach (var file in files)
