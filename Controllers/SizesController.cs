@@ -27,12 +27,13 @@ public class SizesController : ControllerBase
         _sizeRepository = sizeRepository;
     }
 
+    [HttpPost(Name = "create-size")]
     public async Task<IActionResult> CreateSize([FromBody] SizeUpsertDto model)
     {
-        var size = _mapper.Map<Size>(model);
-        var createdSize = await _sizeRepository.CreateAsync(size);
+        var newSize = _mapper.Map<Size>(model);
+        var createdSize = await _sizeRepository.CreateAsync(newSize);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateSize), new { id = createdSize.Id }, size);
+        return CreatedAtAction(nameof(CreateSize), new { id = createdSize.Id }, newSize);
     }
 
     [AllowAnonymous]
@@ -49,7 +50,7 @@ public class SizesController : ControllerBase
     public async Task<IActionResult> GetSize(int id)
     {
         var size = await _sizeRepository.GetAsync(id);
-        if (size == null) return NotFound(new { message = Errors.NotFound404 });
+        if (size == null) return NotFound(new ErrorResponse(Errors.NotFound404));
         var result = _mapper.Map<SizeDto>(size);
         return Ok(result);
 
@@ -59,7 +60,7 @@ public class SizesController : ControllerBase
     public async Task<IActionResult> DeleteSize(int id)
     {
         var size = await _sizeRepository.DeleteAsync(id);
-        if (!size) return NotFound(new { message = Errors.NotFound404 });
+        if (!size) return NotFound(new ErrorResponse(Errors.NotFound404));
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
 

@@ -7,6 +7,8 @@ using Market.DataContext;
 using Market.Models;
 using Market.Models.DTOS.Auths;
 using Market.Models.DTOS.Claims;
+using Market.Models.DTOS.Users;
+using Market.Models.DTOS.Verifications;
 using Market.OptionsSetup.Jwt;
 using Market.Utils;
 using Market.Utils.Constants;
@@ -52,72 +54,58 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
 
-        try
+        var user = await _userManager.FindByEmailAsync(registerDto.Email);
+        if (user != null) return Conflict(new { Message = Errors.Conflict409 });
+
+        if (!Regex.IsMatch(registerDto.FirstName, Constants.NamePattern) &&
+                            !Regex.IsMatch(registerDto.LastName, Constants.NamePattern))
         {
-            if (!Regex.IsMatch(registerDto.FirstName, Constants.NamePattern) &&
-                !Regex.IsMatch(registerDto.LastName, Constants.NamePattern))
+            return BadRequest(new { message = Errors.InvalidFormat + " name format" });
+        }
+
+        var newUser = _mapper.Map<ApplicationUser>(registerDto);
+        var randomInt = Helper.GenerateRandomNumber(10);
+
+        var accountVerification = new AccountVerification { Email = newUser.Email!, Code = (int)randomInt };
+
+        await _userManager.CreateAsync(newUser, registerDto.Password);
+
+        var claims = new List<Claim>
             {
-                return BadRequest(new { message = Errors.InvalidFormat + " name format" });
-            }
-
-            var user = _mapper.Map<ApplicationUser>(registerDto);
-            var randomInt = Helper.GenerateRandomNumber(10);
-
-            var accountVerification = new AccountVerification { Email = user.Email!, Code = (int)randomInt };
-
-            await _userManager.CreateAsync(user, registerDto.Password);
-            
-            var claims = new List<Claim>
-            {
-                new(CustomClaimTypes.Sub, user.Id),
+                new(CustomClaimTypes.Sub, newUser.Id),
                 new(CustomClaimTypes.Roles, Roles.User),
             };
-            
-            await _userManager.AddClaimsAsync(user, claims);
-            _context.AccountVerifications.Add(accountVerification);
-            await _context.SaveChangesAsync();
-            // Send mail token to user.
-            return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
-        }
-        catch (Exception e)
-        {
-            _logger.LogCritical($"{Errors.Server500}-{e.Message}");
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
-    }
 
+        await _userManager.AddClaimsAsync(newUser, claims);
+        _context.AccountVerifications.Add(accountVerification);
+        await _context.SaveChangesAsync();
+        var result = _mapper.Map<UserDto>(newUser);
+        // Send mail token to user.
+        return CreatedAtAction(nameof(Register), new { id = result.Id }, result);
+    }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto auth)
     {
-        try
-        {
-            var user = await _userManager.FindByEmailAsync(auth.Email);
-        
-            if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
-            {
-                return Unauthorized(new { message = Errors.InvalidCredentials });
-            }
-        
-            if (!user.EmailConfirmed)
-            {
-                return BadRequest(new { message = Errors.UnverifiedAccount });
-            }
+        var user = await _userManager.FindByEmailAsync(auth.Email);
 
-            await _signInManager.PasswordSignInAsync(user, auth.Password, isPersistent: false, lockoutOnFailure: false);
-            var token = await GenerateJwtToken(user);
-            user.LastLogin = DateTime.UtcNow;
-            
-            await _context.SaveChangesAsync();
-            
-            return Ok(new { Token = token });
-
-        }
-        catch (Exception e)
+        if (user == null || !await _userManager.CheckPasswordAsync(user, auth.Password))
         {
-            _logger.LogCritical($"{Errors.Server500}-{e.Message}");
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            return Unauthorized(new ErrorResponse(Errors.InvalidCredentials));
         }
+
+        if (!user.EmailConfirmed)
+        {
+            return BadRequest(new ErrorResponse(Errors.UnverifiedAccount));
+        }
+
+        await _signInManager.PasswordSignInAsync(user, auth.Password, isPersistent: false, lockoutOnFailure: false);
+        var token = await GenerateJwtToken(user);
+        user.LastLogin = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { Token = token });
 
     }
 
@@ -136,12 +124,12 @@ public class AuthController : ControllerBase
 
         var user = await _userManager.FindByIdAsync(id);
         if (user == null) return NotFound(new { message = Errors.NotFound404 });
-       
+
         var existingClaims = await _userManager.GetClaimsAsync(user);
         var claimExists = existingClaims.Any(c => c.Type == claimDto.Type && c.Value == claimDto.Value);
-        if(claimExists) return Conflict(new { message = Errors.Conflict409 });
+        if (claimExists) return Conflict(new { message = Errors.Conflict409 });
         await _userManager.AddClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
-        
+
         return Ok();
     }
 
@@ -150,32 +138,24 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RemoveClaim(string id, [FromBody] ClaimUpsertDto claimDto)
     {
         var user = await _userManager.FindByIdAsync(id);
-        if (user == null) return NotFound(new { message = Errors.NotFound404 });
+        if (user == null) return NotFound(new ErrorResponse(Errors.NotFound404));
         await _userManager.RemoveClaimAsync(user, new Claim(claimDto.Type, claimDto.Value));
-        
+
         return Ok();
     }
 
     [HttpGet("verify-account")]
-    public async Task<IActionResult> VerifyAccount([FromQuery(Name = "verificationCode")] int verificationCode)
+    public async Task<IActionResult> VerifyAccount([FromBody] VerificationDto verificationDto)
     {
-        try
-        {
-            var token = await _context.AccountVerifications.FirstOrDefaultAsync(a => a.Code == verificationCode);
-            
-            var user = _context.Users.FirstOrDefaultAsync(u => token != null && u.Email == token.Email);
-            var mappedUser = _mapper.Map<ApplicationUser>(user);
-            if (mappedUser.EmailConfirmed) return BadRequest(new { message = Errors.Repetition });
-            mappedUser.EmailConfirmed = true;
-            await _userManager.UpdateAsync(mappedUser);
-            
-            return Ok();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"{Errors.Server500}-{e.Message}");
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = Errors.Server500 });
-        }
+        var token = await _context.AccountVerifications.FirstOrDefaultAsync(a => a.Code == verificationDto.Code);
+
+        var user = _context.Users.FirstOrDefaultAsync(u => token != null && u.Email == token.Email);
+        var mappedUser = _mapper.Map<ApplicationUser>(user);
+        if (mappedUser.EmailConfirmed) return BadRequest(new { message = Errors.Repetition });
+        mappedUser.EmailConfirmed = true;
+        await _userManager.UpdateAsync(mappedUser);
+
+        return Ok();
     }
 
     [HttpPost("request-password-reset")]
@@ -184,22 +164,25 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(passwordResetRequestDto.Email);
         if (user == null) return NotFound();
         if (!user.EmailConfirmed) return StatusCode(StatusCodes.Status401Unauthorized);
-        
+
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var existingToken = await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.Email == user.Email);
         if (existingToken != null) _context.Remove(existingToken);
-        
+
         await _context.SaveChangesAsync();
-        
+
         var passwordResetToken = new PasswordResetToken
         {
-            Email = user.Email!, Token = token, ExpiresAt = DateTime.UtcNow.AddHours(1), CreatedAt = DateTime.UtcNow
+            Email = user.Email!,
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            CreatedAt = DateTime.UtcNow
         };
-        
+
         _context.PasswordResetTokens.Add(passwordResetToken);
-        
+
         await _context.SaveChangesAsync();
-        
+
         return Ok();
     }
 
@@ -207,31 +190,23 @@ public class AuthController : ControllerBase
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] PasswordResetDto passwordResetDto)
     {
-        try
-        {
-            var token = await _context.PasswordResetTokens.FirstOrDefaultAsync(t =>
+        var token = await _context.PasswordResetTokens.FirstOrDefaultAsync(t =>
                 t.Token == passwordResetDto.PasswordResetToken);
 
-            var user = await _context.Users.FirstOrDefaultAsync(u =>
-                u.Email == token!.Email);
-            if (user == null) return NotFound();
+        var user = await _context.Users.FirstOrDefaultAsync(u =>
+            u.Email == token!.Email);
+        if (user == null) return NotFound();
 
-            if (token!.ExpiresAt <= DateTime.UtcNow.AddMinutes(5))
-                return BadRequest(new { message = Errors.ExpiredToken });
-            
-            await _userManager.ResetPasswordAsync(user, passwordResetDto.PasswordResetToken,
-                    passwordResetDto.Password);
-            _context.PasswordResetTokens.Remove(token);
-            
-            await _context.SaveChangesAsync();
-            
-            return Ok();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"{Errors.Server500}-{e.Message}");
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = Errors.Server500 });
-        }
+        if (token!.ExpiresAt <= DateTime.UtcNow.AddMinutes(5))
+            return BadRequest(new { message = Errors.ExpiredToken });
+
+        await _userManager.ResetPasswordAsync(user, passwordResetDto.PasswordResetToken,
+                passwordResetDto.Password);
+        _context.PasswordResetTokens.Remove(token);
+
+        await _context.SaveChangesAsync();
+
+        return Ok();
     }
 
     private async Task<IEnumerable<Claim>> AddDefaultClaimsToUser(ApplicationUser user)
