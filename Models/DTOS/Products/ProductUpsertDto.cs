@@ -15,7 +15,7 @@ public class ProductUpsertDto
     public string Name
     {
         get => _name;
-        set => _name = Helper.ToTitleCase(value);
+        set => _name = Helper.ToUpper(value);
     }
     [Required]
     [Column(TypeName = "decimal")]
@@ -23,7 +23,12 @@ public class ProductUpsertDto
     public decimal Price { get; set; }
     [Required]
     public string Description { get; set; } = null!;
+    public string? Identification { get; set; }
+    public decimal? Weight { get; set; }
+    public ICollection<string> ImageUrls { get; set; } = new List<string>();
     // Navigation properties
+    public int? SizeId { get; set; }
+    public int? ColorId { get; set; }
     [Required]
     public int ProductTypeId { get; set; }
     [ForeignKey(nameof(ProductTypeId))]
@@ -37,6 +42,5 @@ public class ProductUpsertDto
     public int? DiscountId { get; set; }
     [ForeignKey(nameof(DiscountId))]
     public Category? Discount { get; set; }
-    public ICollection<string>? ImageUrls { get; set; }
 
 }

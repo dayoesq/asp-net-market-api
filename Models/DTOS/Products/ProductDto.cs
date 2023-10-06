@@ -7,7 +7,7 @@ public class ProductDto : BaseEntity
     public decimal Price { get; set; }
     public string Description { get; set; } = null!;
     public string? Identification { get; set; }
-    public ICollection<string>? ImageUrls { get; set; }
+    public ICollection<string> ImageUrls { get; set; } = new List<string>();
     public decimal Weight { get; set; }
     // Navigation properties
     public int? DiscountId { get; set; }

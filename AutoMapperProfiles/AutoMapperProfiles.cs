@@ -65,6 +65,24 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
             .ForMember(dest => dest.ProductTypeId, opt => opt.MapFrom(src => src.ProductTypeId));
 
+        CreateMap<ProductUpsertDto, Product>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+            .ForMember(dest => dest.Identification, opt => opt.MapFrom(src => src.Identification))
+            .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.ImageUrls))
+            .ForMember(dest => dest.Weight, opt => opt.MapFrom(src => src.Weight))
+            .ForMember(dest => dest.DiscountId, opt => opt.MapFrom(src => src.DiscountId))
+            .ForMember(dest => dest.SizeId, opt => opt.MapFrom(src => src.SizeId))
+            .ForMember(dest => dest.ColorId, opt => opt.MapFrom(src => src.ColorId))
+            .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
+            .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+            .ForMember(dest => dest.ProductTypeId, opt => opt.MapFrom(src => src.ProductTypeId))
+            .ForMember(dest => dest.DiscountId, opt => opt.MapFrom(src => src.DiscountId))
+            .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
+            .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+            .ForMember(dest => dest.ProductTypeId, opt => opt.MapFrom(src => src.ProductTypeId)).ReverseMap();
+
         CreateMap<DiscountUpsertDto, Discount>().ReverseMap();
         CreateMap<Discount, DiscountDto>().ReverseMap();
 

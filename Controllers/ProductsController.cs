@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Market.Utils;
 using Market.Utils.Constants;
 using Market.Models.DTOS.Products;
-using Market.Filters;
+using Market.Models.DTOS.Errors;
 
 namespace Market.Controllers;
 
@@ -20,17 +20,26 @@ public class ProductsController : ControllerBase
     private readonly IWebHostEnvironment _webHost;
     private readonly IMapper _mapper;
     private readonly IRepository<Product, int> _productRepository;
+    private readonly IRepository<Image, int> _imageRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger _logger;
 
-    public ProductsController(IMapper mapper, IUnitOfWork unitOfWork, IRepository<Product, int> productRepository, IWebHostEnvironment webHost)
+    public ProductsController(
+        IMapper mapper,
+        IUnitOfWork unitOfWork,
+        IRepository<Product, int> productRepository,
+        IRepository<Image, int> imageRepository,
+         IWebHostEnvironment webHost,
+         ILogger logger
+         )
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _productRepository = productRepository;
+        _imageRepository = imageRepository;
         _webHost = webHost;
+        _logger = logger;
     }
-
-    
 
     [AllowAnonymous]
     [HttpGet(Name = "get-Products")]
@@ -46,32 +55,83 @@ public class ProductsController : ControllerBase
     [HttpGet("{id:int}", Name = "get-Product")]
     public async Task<IActionResult> GetProduct(int id)
     {
-        var product = await _productRepository.GetAsync(id);
-        if (product == null) return NotFound(new { message = Errors.NotFound404 });
-        var result = _mapper.Map<Product, ProductDto>(product);
-        return Ok(result);
+        try
+        {
+            var product = await _productRepository.GetAsync(id);
+            var result = _mapper.Map<Product, ProductDto>(product!);
+            return Ok(result);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"{Errors.Server500}-{e.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPut("{id:int}", Name = "update-Product")]
-    public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpsertDto model)
+    public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpsertDto model, List<IFormFile> files)
     {
-        var existingProduct = await _productRepository.GetAsync(id);
-        if (existingProduct == null) return NotFound(new { message = Errors.NotFound404 });
-        if (existingProduct.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
-        var result = _mapper.Map(model, existingProduct);
-        await _unitOfWork.CommitAsync();
-        return Ok(result);
+        try
+        {
+            var existingProduct = await _productRepository.GetAsync(id);
+            var result = _mapper.Map(model, existingProduct);
 
+            await _unitOfWork.CommitAsync();
+
+            var productImageFolder = Path.Combine(_webHost.WebRootPath, "ProductImages", $"{existingProduct!.Name}-{existingProduct.Id}");
+            if (!Directory.Exists(productImageFolder)) Directory.CreateDirectory(productImageFolder);
+
+            var imageUrls = new List<string>();
+
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(productImageFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    var image = new Image { Url = fileName, ProductId = result!.Id };
+                    await _imageRepository.CreateAsync(image);
+
+                    imageUrls.Add(Path.Combine("/productImages", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
+                    existingProduct.ImageUrls.Add(image.Url);
+                }
+            }
+
+            await _unitOfWork.CommitAsync();
+
+            model.ImageUrls = imageUrls;
+
+            return Ok(model);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"{Errors.Server500}-{e.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
+
 
     [HttpDelete("{id:int}", Name = "delete-Product")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
-        var existingProduct = await _productRepository.GetAsync(id);
-        if (existingProduct == null) return NotFound(new { message = Errors.NotFound404 });
-        await _productRepository.DeleteAsync(id);
-        await _unitOfWork.CommitAsync();
-        return Ok(new { message = ResponseMessage.Success });
+        try
+        {
+            await _productRepository.DeleteAsync(id);
+            await _unitOfWork.CommitAsync();
+            return Ok(new { message = ResponseMessage.Success });
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"{Errors.Server500}-{e.Message}");
+            return (IActionResult)new ErrorResponse { Message = Errors.Server500 };
+        }
     }
 
 }
