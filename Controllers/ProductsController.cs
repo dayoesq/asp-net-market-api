@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Market.Utils;
 using Market.Utils.Constants;
 using Market.Models.DTOS.Products;
-using Market.Models.DTOS.Errors;
 
 namespace Market.Controllers;
 
@@ -57,7 +56,7 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var product = await _productRepository.GetAsync(id);
+            var product = await _productRepository.GetAsync(p => p.Id == id);
             var result = _mapper.Map<Product, ProductDto>(product!);
             return Ok(result);
         }
@@ -71,67 +70,51 @@ public class ProductsController : ControllerBase
     [HttpPut("{id:int}", Name = "update-Product")]
     public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpsertDto model, List<IFormFile> files)
     {
-        try
+        var existingProduct = await _productRepository.GetAsync(p => p.Id == id);
+        var result = _mapper.Map(model, existingProduct);
+
+        await _unitOfWork.CommitAsync();
+
+        var productImageFolder = Path.Combine(_webHost.WebRootPath, "ProductImages", $"{existingProduct!.Name}-{existingProduct.Id}");
+        if (!Directory.Exists(productImageFolder)) Directory.CreateDirectory(productImageFolder);
+
+        var imageUrls = new List<string>();
+
+        foreach (var file in files)
         {
-            var existingProduct = await _productRepository.GetAsync(id);
-            var result = _mapper.Map(model, existingProduct);
-
-            await _unitOfWork.CommitAsync();
-
-            var productImageFolder = Path.Combine(_webHost.WebRootPath, "ProductImages", $"{existingProduct!.Name}-{existingProduct.Id}");
-            if (!Directory.Exists(productImageFolder)) Directory.CreateDirectory(productImageFolder);
-
-            var imageUrls = new List<string>();
-
-            foreach (var file in files)
+            if (file.Length > 0)
             {
-                if (file.Length > 0)
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                var filePath = Path.Combine(productImageFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
                 {
-
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var filePath = Path.Combine(productImageFolder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    var image = new Image { Url = fileName, ProductId = result!.Id };
-                    await _imageRepository.CreateAsync(image);
-
-                    imageUrls.Add(Path.Combine("/productImages", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
-                    existingProduct.ImageUrls.Add(image.Url);
+                    await file.CopyToAsync(stream);
                 }
+
+                var image = new Image { Url = fileName, ProductId = result!.Id };
+                await _imageRepository.CreateAsync(image);
+
+                imageUrls.Add(Path.Combine("/productImages", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
+                existingProduct.ImageUrls.Add(image.Url);
             }
-
-            await _unitOfWork.CommitAsync();
-
-            model.ImageUrls = imageUrls;
-
-            return Ok(model);
         }
-        catch (Exception e)
-        {
-            _logger.LogError($"{Errors.Server500}-{e.Message}");
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+
+        await _unitOfWork.CommitAsync();
+
+        model.ImageUrls = imageUrls;
+
+        return Ok(model);
     }
 
 
     [HttpDelete("{id:int}", Name = "delete-Product")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
-        try
-        {
-            await _productRepository.DeleteAsync(id);
-            await _unitOfWork.CommitAsync();
-            return Ok(new { message = ResponseMessage.Success });
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"{Errors.Server500}-{e.Message}");
-            return (IActionResult)new ErrorResponse { Message = Errors.Server500 };
-        }
+        await _productRepository.DeleteAsync(p => p.Id == id);
+        await _unitOfWork.CommitAsync();
+        return Ok(new { message = ResponseMessage.Success });
     }
 
 }

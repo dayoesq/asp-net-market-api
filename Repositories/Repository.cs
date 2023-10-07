@@ -3,7 +3,6 @@ using Market.DataContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace Market.Repositories;
-
 public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
 {
     private readonly ApplicationDbContext _context;
@@ -11,16 +10,26 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
     public Repository(ApplicationDbContext context)
     {
         _context = context;
-    }
-    
-    public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null)
-    {
-        return await _context.Set<TEntity>().ToListAsync();
+       
     }
 
-    public async Task<TEntity?> GetAsync(TKey id)
+    public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null)
     {
-        return await _context.Set<TEntity>().FindAsync(id);
+        IQueryable<TEntity> query = _context.Set<TEntity>();
+
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        var entity = await _context.Set<TEntity>().FirstOrDefaultAsync(predicate);
+        return entity!;
+    
     }
 
     public async Task<TEntity> CreateAsync(TEntity entity)
@@ -29,7 +38,7 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
         await _context.SaveChangesAsync();
         return entity;
     }
-    
+
     public async Task<TEntity> UpdateAsync(TKey id, TEntity entity)
     {
         _context.Entry(entity).State = EntityState.Modified;
@@ -37,9 +46,9 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
         return entity;
     }
 
-    public async Task<bool> DeleteAsync(TKey id)
+    public async Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        var entity = await GetAsync(id);
+        var entity = await GetAsync(predicate);
         if (entity == null)
             return false;
 
@@ -47,7 +56,6 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
         await _context.SaveChangesAsync();
         return true;
     }
+
+
 }
-
-
-

@@ -11,7 +11,7 @@ using Market.Utils.Constants;
 
 namespace Market.Controllers;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
 [ApiController]
 [Route("[controller]")]
 public class DiscountsController : ControllerBase
@@ -28,13 +28,15 @@ public class DiscountsController : ControllerBase
         _discountRepository = discountRepository;
     }
 
-    [HttpPost(Name = "create-discount")]
+    //[HttpPost(Name = "create-discount")]
     public async Task<IActionResult> CreateDiscount([FromBody] DiscountUpsertDto model)
     {
+        var existingDiscount = await _discountRepository.GetAsync(d => d.Code == model.Code.ToUpper());
+        if(existingDiscount != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var discount = _mapper.Map<Discount>(model);
-        var createdDiscount = await _discountRepository.CreateAsync(discount);
+        var newDiscount = await _discountRepository.CreateAsync(discount);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateDiscount), new { id = createdDiscount.Id }, discount);
+        return CreatedAtAction(nameof(CreateDiscount), new { id = newDiscount.Id }, discount);
     }
 
     [AllowAnonymous]
@@ -51,7 +53,7 @@ public class DiscountsController : ControllerBase
     [HttpGet("{id:int}", Name = "get-discount")]
     public async Task<IActionResult> GetDiscount(int id)
     {
-        var discount = await _discountRepository.GetAsync(id);
+        var discount = await _discountRepository.GetAsync(d => d.Id == id);
         if (discount == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<Discount, DiscountDto>(discount);
         return Ok(result);
@@ -60,7 +62,7 @@ public class DiscountsController : ControllerBase
     [HttpPut("{id:int}", Name = "update-discount")]
     public async Task<IActionResult> UpdateDiscount(int id, [FromBody] DiscountUpsertDto model)
     {
-        var existingDiscount = await _discountRepository.GetAsync(id);
+        var existingDiscount = await _discountRepository.GetAsync(d => d.Id == id);
         if (existingDiscount == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingDiscount.Code == model.Code.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingDiscount);
@@ -72,9 +74,9 @@ public class DiscountsController : ControllerBase
     [HttpDelete("{id:int}", Name = "delete-discount")]
     public async Task<IActionResult> DeleteDiscount(int id)
     {
-        var existingDiscount = await _discountRepository.GetAsync(id);
+        var existingDiscount = await _discountRepository.GetAsync(d => d.Id == id);
         if (existingDiscount == null) return NotFound(new { message = Errors.NotFound404 });
-        await _discountRepository.DeleteAsync(id);
+        await _discountRepository.DeleteAsync(d => d.Id == id);
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }

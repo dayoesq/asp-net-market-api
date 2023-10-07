@@ -49,7 +49,7 @@ public class ProductTypesController : ControllerBase
     [HttpGet("{id}", Name = "get-product-type")]
     public async Task<IActionResult> GetProductType(int id)
     {
-        var productType = await _productTypeRepository.GetAsync(id);
+        var productType = await _productTypeRepository.GetAsync(pt => pt.Id == id);
         if (productType == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<ProductTypeDto>(productType);
         return Ok(result);
@@ -59,7 +59,7 @@ public class ProductTypesController : ControllerBase
     [HttpPut("{id:int}", Name = "update-product-type")]
     public async Task<IActionResult> UpdateProductType(int id, [FromBody] ProductTypeUpsertDto model)
     {
-        var existingProductType = await _productTypeRepository.GetAsync(id);
+        var existingProductType = await _productTypeRepository.GetAsync(pt => pt.Id == id);
         if (existingProductType == null) return NotFound(new { message = Errors.NotFound404 });
         var productType = _mapper.Map<ProductType>(model);
         var createdProductType = await _productTypeRepository.CreateAsync(productType);
@@ -71,7 +71,7 @@ public class ProductTypesController : ControllerBase
     [HttpDelete("{id}", Name = "delete-product-type")]
     public async Task<IActionResult> DeleteProductType(int id)
     {
-        var productType = await _productTypeRepository.DeleteAsync(id);
+        var productType = await _productTypeRepository.DeleteAsync(p => p.Id == id);
         if (!productType) return NotFound(new { message = Errors.NotFound404 });
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
