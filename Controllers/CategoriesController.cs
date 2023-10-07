@@ -52,7 +52,7 @@ public class CategoriesController : ControllerBase
     [HttpGet("{id:int}", Name = "get-category")]
     public async Task<IActionResult> GetCategory(int id)
     {
-        var category = await _categoryRepository.GetAsync(id);
+        var category = await _categoryRepository.GetAsync(c => c.Id == id);
         if (category == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<Category, CategoryDto>(category);
         return Ok(result);
@@ -61,7 +61,7 @@ public class CategoriesController : ControllerBase
     [HttpPut("{id:int}", Name = "update-category")]
     public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryUpsertDto model)
     {
-        var existingCategory = await _categoryRepository.GetAsync(id);
+        var existingCategory = await _categoryRepository.GetAsync(c => c.Id == id);
         if (existingCategory == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingCategory.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingCategory);
@@ -73,9 +73,9 @@ public class CategoriesController : ControllerBase
     [HttpDelete("{id:int}", Name = "delete-category")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
-        var existingCategory = await _categoryRepository.GetAsync(id);
+        var existingCategory = await _categoryRepository.GetAsync(c => c.Id == id);
         if (existingCategory == null) return NotFound(new { message = Errors.NotFound404 });
-        await _categoryRepository.DeleteAsync(id);
+        await _categoryRepository.DeleteAsync(c => c.Id == id);
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }

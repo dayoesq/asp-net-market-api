@@ -17,11 +17,11 @@ namespace Market.Controllers;
 public class BrandsController : ControllerBase
 {
     private readonly IMapper _mapper;
-    private readonly IRepository<Brand, int> _brandRepository;
+    private readonly IRepository<Brand, string> _brandRepository;
     private readonly IUnitOfWork _unitOfWork;
 
 
-    public BrandsController(IMapper mapper, IUnitOfWork unitOfWork, IRepository<Brand, int> brandRepository)
+    public BrandsController(IMapper mapper, IUnitOfWork unitOfWork, IRepository<Brand, string> brandRepository)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
@@ -31,10 +31,12 @@ public class BrandsController : ControllerBase
     [HttpPost(Name = "create-brand")]
     public async Task<IActionResult> CreateBrand([FromBody] BrandUpsertDto model)
     {
+        var existingBrand = await _brandRepository.GetAsync(b => b.Name.ToUpper() == model.Name.ToUpper());
+        if (existingBrand != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var brand = _mapper.Map<Brand>(model);
-        var createdBrand = await _brandRepository.CreateAsync(brand);
+        var newBrand = await _brandRepository.CreateAsync(brand);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateBrand), new { id = createdBrand.Id }, brand);
+        return CreatedAtAction(nameof(CreateBrand), new { id = newBrand.Id }, brand);
     }
 
     [AllowAnonymous]
@@ -48,19 +50,19 @@ public class BrandsController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:int}", Name = "get-brand")]
-    public async Task<IActionResult> GetBrand(int id)
+    [HttpGet("{slug}", Name = "get-brand")]
+    public async Task<IActionResult> GetBrand(string slug)
     {
-        var brand = await _brandRepository.GetAsync(id);
+        var brand = await _brandRepository.GetAsync(b => b.Name == slug);
         if (brand == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<Brand, BrandDto>(brand);
         return Ok(result);
     }
 
-    [HttpPut("{id:int}", Name = "update-brand")]
-    public async Task<IActionResult> UpdateBrand(int id, [FromBody] BrandUpsertDto model)
+    [HttpPut("{slug}", Name = "update-brand")]
+    public async Task<IActionResult> UpdateBrand(string slug, [FromBody] BrandUpsertDto model)
     {
-        var existingBrand = await _brandRepository.GetAsync(id);
+        var existingBrand = await _brandRepository.GetAsync(b => b.Name == slug);
         if (existingBrand == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingBrand.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingBrand);
@@ -69,12 +71,12 @@ public class BrandsController : ControllerBase
 
     }
 
-    [HttpDelete("{id:int}", Name = "delete-brand")]
-    public async Task<IActionResult> DeleteBrand(int id)
+    [HttpDelete("{slug}", Name = "delete-brand")]
+    public async Task<IActionResult> DeleteBrand(string slug)
     {
-        var existingBrand = await _brandRepository.GetAsync(id);
+        var existingBrand = await _brandRepository.GetAsync(b => b.Name == slug);
         if (existingBrand == null) return NotFound(new { message = Errors.NotFound404 });
-        await _brandRepository.DeleteAsync(id);
+        await _brandRepository.DeleteAsync(b => b.Name == slug);
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }
