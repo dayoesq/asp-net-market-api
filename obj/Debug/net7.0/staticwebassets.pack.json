@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg",
+      "PackagePath": "staticwebassets/userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg"
+    },
+    {
+      "Id": "obj/Debug/net7.0/staticwebassets/msbuild.Market.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net7.0/staticwebassets/msbuild.build.Market.props",
+      "PackagePath": "build\\Market.props"
+    },
+    {
+      "Id": "obj/Debug/net7.0/staticwebassets/msbuild.buildMultiTargeting.Market.props",
+      "PackagePath": "buildMultiTargeting\\Market.props"
+    },
+    {
+      "Id": "obj/Debug/net7.0/staticwebassets/msbuild.buildTransitive.Market.props",
+      "PackagePath": "buildTransitive\\Market.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

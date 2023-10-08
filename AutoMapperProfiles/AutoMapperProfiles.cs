@@ -31,6 +31,7 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.LastLogin, opt => opt.MapFrom(src => src.LastLogin))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+            .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl))
             .ReverseMap();
 
         CreateMap<UserUpdateDto, ApplicationUser>()
@@ -40,8 +41,6 @@ public class AutoMapperProfiles : Profile
             .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
             .ForMember(dest => dest.Country, opt => opt.MapFrom(src => src.Country))
             .ForMember(dest => dest.PostalCode, opt => opt.MapFrom(src => src.PostalCode))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
             .ReverseMap();
 
         CreateMap<Product, ProductDto>()

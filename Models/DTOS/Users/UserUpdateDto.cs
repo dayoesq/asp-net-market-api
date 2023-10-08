@@ -4,7 +4,7 @@ using Market.Utils.Constants;
 
 namespace Market.Models.DTOS.Users;
 
-public class UserUpdateDto : BaseEntity
+public class UserUpdateDto
 {
     private string _firstName;
     private string _lastName;

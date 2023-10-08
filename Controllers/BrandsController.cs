@@ -34,7 +34,7 @@ public class BrandsController : ControllerBase
         var existingBrand = await _brandRepository.GetAsync(b => b.Name.ToUpper() == model.Name.ToUpper());
         if (existingBrand != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var brand = _mapper.Map<Brand>(model);
-        var newBrand = await _brandRepository.CreateAsync(brand);
+        var newBrand = _brandRepository.Create(brand);
         await _unitOfWork.CommitAsync();
         return CreatedAtAction(nameof(CreateBrand), new { id = newBrand.Id }, brand);
     }

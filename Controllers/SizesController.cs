@@ -33,7 +33,7 @@ public class SizesController : ControllerBase
         var existingSize = await _sizeRepository.GetAsync(s => s.ProductSize == model.ProductSize);
         if(existingSize != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var size = _mapper.Map<Size>(model);
-        var newSize = await _sizeRepository.CreateAsync(size);
+        var newSize = _sizeRepository.Create(size);
         await _unitOfWork.CommitAsync();
         return CreatedAtAction(nameof(CreateSize), new { id = newSize.Id }, size);
     }

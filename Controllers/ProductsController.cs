@@ -21,15 +21,13 @@ public class ProductsController : ControllerBase
     private readonly IRepository<Product, int> _productRepository;
     private readonly IRepository<Image, int> _imageRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger _logger;
 
     public ProductsController(
         IMapper mapper,
         IUnitOfWork unitOfWork,
         IRepository<Product, int> productRepository,
         IRepository<Image, int> imageRepository,
-         IWebHostEnvironment webHost,
-         ILogger logger
+         IWebHostEnvironment webHost
          )
     {
         _mapper = mapper;
@@ -37,7 +35,6 @@ public class ProductsController : ControllerBase
         _productRepository = productRepository;
         _imageRepository = imageRepository;
         _webHost = webHost;
-        _logger = logger;
     }
 
     [AllowAnonymous]
@@ -54,17 +51,9 @@ public class ProductsController : ControllerBase
     [HttpGet("{id:int}", Name = "get-Product")]
     public async Task<IActionResult> GetProduct(int id)
     {
-        try
-        {
-            var product = await _productRepository.GetAsync(p => p.Id == id);
-            var result = _mapper.Map<Product, ProductDto>(product!);
-            return Ok(result);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError($"{Errors.Server500}-{e.Message}");
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        var product = await _productRepository.GetAsync(p => p.Id == id);
+        var result = _mapper.Map<Product, ProductDto>(product!);
+        return Ok(result);
     }
 
     [HttpPut("{id:int}", Name = "update-Product")]
@@ -94,7 +83,7 @@ public class ProductsController : ControllerBase
                 }
 
                 var image = new Image { Url = fileName, ProductId = result!.Id };
-                await _imageRepository.CreateAsync(image);
+                _imageRepository.Create(image);
 
                 imageUrls.Add(Path.Combine("/productImages", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
                 existingProduct.ImageUrls.Add(image.Url);
