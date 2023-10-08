@@ -33,7 +33,7 @@ public class CategoriesController : ControllerBase
     public async Task<IActionResult> CreateCategory([FromBody] CategoryUpsertDto model)
     {
         var category = _mapper.Map<Category>(model);
-        var createdCategory = await _categoryRepository.CreateAsync(category);
+        var createdCategory = _categoryRepository.Create(category);
         await _unitOfWork.CommitAsync();
         return CreatedAtAction(nameof(CreateCategory), new { id = createdCategory.Id }, category);
     }
@@ -65,6 +65,7 @@ public class CategoriesController : ControllerBase
         if (existingCategory == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingCategory.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingCategory);
+        _categoryRepository.Update(id, result);
         await _unitOfWork.CommitAsync();
         return Ok(result);
 

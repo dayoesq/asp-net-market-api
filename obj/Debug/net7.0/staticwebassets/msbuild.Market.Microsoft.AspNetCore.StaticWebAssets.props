@@ -1,0 +1,20 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\userImages\-7d19b29e-9f49-4c40-8847-1d0cddaa15c8\71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg))">
+      <SourceType>Package</SourceType>
+      <SourceId>Market</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Market</BasePath>
+      <RelativePath>userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\userImages\-7d19b29e-9f49-4c40-8847-1d0cddaa15c8\71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg))</OriginalItemSpec>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>

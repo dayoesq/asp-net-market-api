@@ -32,9 +32,9 @@ public class DiscountsController : ControllerBase
     public async Task<IActionResult> CreateDiscount([FromBody] DiscountUpsertDto model)
     {
         var existingDiscount = await _discountRepository.GetAsync(d => d.Code == model.Code.ToUpper());
-        if(existingDiscount != null) return Conflict(new ErrorResponse(Errors.Conflict409));
+        if (existingDiscount != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var discount = _mapper.Map<Discount>(model);
-        var newDiscount = await _discountRepository.CreateAsync(discount);
+        var newDiscount = _discountRepository.Create(discount);
         await _unitOfWork.CommitAsync();
         return CreatedAtAction(nameof(CreateDiscount), new { id = newDiscount.Id }, discount);
     }
@@ -66,6 +66,7 @@ public class DiscountsController : ControllerBase
         if (existingDiscount == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingDiscount.Code == model.Code.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingDiscount);
+        _discountRepository.Update(id, result);
         await _unitOfWork.CommitAsync();
         return Ok(result);
 

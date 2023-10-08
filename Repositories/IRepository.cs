@@ -5,10 +5,10 @@ namespace Market.Repositories;
 public interface IRepository<TEntity, in TKey> where TEntity : class
 {
    
-    Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null);
+    TEntity Create(TEntity entity);
     Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate);
-    Task<TEntity> CreateAsync(TEntity entity);
-    Task<TEntity> UpdateAsync(TKey id, TEntity entity);
+    Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null);
+    TEntity Update(TKey id, TEntity entity);
     Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> predicate);
 }
 

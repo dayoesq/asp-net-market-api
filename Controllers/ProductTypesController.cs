@@ -31,9 +31,9 @@ public class ProductTypesController : ControllerBase
     public async Task<IActionResult> CreateProductType([FromBody] ProductTypeUpsertDto model)
     {
         var productType = _mapper.Map<ProductType>(model);
-        var createdProductType = await _productTypeRepository.CreateAsync(productType);
+        var newProductType = _productTypeRepository.Create(productType);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateProductType), new { id = createdProductType.Id }, createdProductType);
+        return CreatedAtAction(nameof(CreateProductType), new { id = newProductType.Id }, newProductType);
     }
 
     [AllowAnonymous]
@@ -62,9 +62,9 @@ public class ProductTypesController : ControllerBase
         var existingProductType = await _productTypeRepository.GetAsync(pt => pt.Id == id);
         if (existingProductType == null) return NotFound(new { message = Errors.NotFound404 });
         var productType = _mapper.Map<ProductType>(model);
-        var createdProductType = await _productTypeRepository.CreateAsync(productType);
+        var result = _productTypeRepository.Update(id, productType);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateProductType), new { id = createdProductType.Id }, createdProductType);
+        return CreatedAtAction(nameof(CreateProductType), new { id = result.Id }, result);
     }
 
 

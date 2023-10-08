@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Runtime.Serialization;
 using Market.DataContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,19 +33,31 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
     
     }
 
-    public async Task<TEntity> CreateAsync(TEntity entity)
+    public TEntity Create(TEntity entity)
     {
         _context.Set<TEntity>().Add(entity);
-        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public async Task<TEntity> UpdateAsync(TKey id, TEntity entity)
+    public TEntity Update(TKey id, TEntity entity)
     {
-        _context.Entry(entity).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return entity;
+        var existingEntity = _context.Set<TEntity>().Find(id);
+
+        if (existingEntity == null)
+        {
+            throw new EntityNotFoundException($"Entity with id {id} not found.");
+        }
+
+        _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+
+        if (_context.ChangeTracker.HasChanges())
+        {
+            _context.SaveChanges();
+        }
+
+        return existingEntity;
     }
+
 
     public async Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> predicate)
     {
@@ -53,9 +66,28 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
             return false;
 
         _context.Set<TEntity>().Remove(entity);
-        await _context.SaveChangesAsync();
         return true;
     }
 
 
+}
+
+[Serializable]
+internal class EntityNotFoundException : Exception
+{
+    public EntityNotFoundException()
+    {
+    }
+
+    public EntityNotFoundException(string? message) : base(message)
+    {
+    }
+
+    public EntityNotFoundException(string? message, Exception? innerException) : base(message, innerException)
+    {
+    }
+
+    protected EntityNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
+    }
 }

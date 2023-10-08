@@ -32,7 +32,7 @@ public class ColorsController : ControllerBase
     public async Task<IActionResult> CreateColor([FromBody] ColorUpsertDto model)
     {
         var color = _mapper.Map<Color>(model);
-        var createdColor = await _colorRepository.CreateAsync(color);
+        var createdColor = _colorRepository.Create(color);
         await _unitOfWork.CommitAsync();
         return CreatedAtAction(nameof(CreateColor), new { id = createdColor.Id }, color);
     }
@@ -64,6 +64,7 @@ public class ColorsController : ControllerBase
         if (existingColor == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingColor.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingColor);
+        _colorRepository.Update(id, result);
         await _unitOfWork.CommitAsync();
         return Ok(result);
 
