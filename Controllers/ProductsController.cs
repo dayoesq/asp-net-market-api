@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Market.Utils;
 using Market.Utils.Constants;
 using Market.Models.DTOS.Products;
+using Market.Filters;
 
 namespace Market.Controllers;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
 [ApiController]
 [Route("[controller]")]
 public class ProductsController : ControllerBase
@@ -37,8 +38,55 @@ public class ProductsController : ControllerBase
         _webHost = webHost;
     }
 
+    [HttpPost(Name = "create-product")]
+    [TrimRequestStrings]
+    public async Task<IActionResult> CreateProduct([FromForm] ProductUpsertDto model, List<IFormFile>? files)
+    {
+        var existingProduct = await _productRepository.GetAsync(p => p.Name.ToUpper() == model.Name.ToUpper());
+        if (existingProduct != null) return Conflict(new ErrorResponse(Errors.Conflict409));
+
+        var result = _mapper.Map(model, existingProduct);
+
+        await _unitOfWork.CommitAsync();
+
+        var productImageFolder = Path.Combine(_webHost.WebRootPath, "images", "products", $"{existingProduct!.Name}-{existingProduct.Id}");
+        if (!Directory.Exists(productImageFolder)) Directory.CreateDirectory(productImageFolder);
+
+        var imageUrls = new List<string>();
+
+        if (files != null)
+        {
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(productImageFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    var image = new Image { Url = fileName, ProductId = result!.Id };
+                    _imageRepository.Create(image);
+
+                    imageUrls.Add(Path.Combine("/images/products", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
+                    existingProduct.ImageUrls.Add(image.Url);
+                }
+            }
+        }
+
+        await _unitOfWork.CommitAsync();
+
+        model.ImageUrls = imageUrls;
+
+        return Ok(result);
+    }
+
     [AllowAnonymous]
-    [HttpGet(Name = "get-Products")]
+    [HttpGet(Name = "get-products")]
     public async Task<IActionResult> GetProducts()
     {
         var products = await _productRepository.GetAllAsync();
@@ -48,7 +96,7 @@ public class ProductsController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:int}", Name = "get-Product")]
+    [HttpGet("{id:int}", Name = "get-product")]
     public async Task<IActionResult> GetProduct(int id)
     {
         var product = await _productRepository.GetAsync(p => p.Id == id);
@@ -56,37 +104,40 @@ public class ProductsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("{id:int}", Name = "update-Product")]
-    public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpsertDto model, List<IFormFile> files)
+    [HttpPut("{id:int}", Name = "update-product")]
+    public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpsertDto model, List<IFormFile>? files)
     {
         var existingProduct = await _productRepository.GetAsync(p => p.Id == id);
         var result = _mapper.Map(model, existingProduct);
 
         await _unitOfWork.CommitAsync();
 
-        var productImageFolder = Path.Combine(_webHost.WebRootPath, "ProductImages", $"{existingProduct!.Name}-{existingProduct.Id}");
+        var productImageFolder = Path.Combine(_webHost.WebRootPath, "images", "products", $"{existingProduct!.Name}-{existingProduct.Id}");
         if (!Directory.Exists(productImageFolder)) Directory.CreateDirectory(productImageFolder);
 
         var imageUrls = new List<string>();
 
-        foreach (var file in files)
+        if (files != null)
         {
-            if (file.Length > 0)
+            foreach (var file in files)
             {
-
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                var filePath = Path.Combine(productImageFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (file.Length > 0)
                 {
-                    await file.CopyToAsync(stream);
+
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(productImageFolder, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    var image = new Image { Url = fileName, ProductId = result!.Id };
+                    _imageRepository.Create(image);
+
+                    imageUrls.Add(Path.Combine("/images/products", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
+                    existingProduct.ImageUrls.Add(image.Url);
                 }
-
-                var image = new Image { Url = fileName, ProductId = result!.Id };
-                _imageRepository.Create(image);
-
-                imageUrls.Add(Path.Combine("/productImages", $"{existingProduct.Name}-{existingProduct.Id}", fileName));
-                existingProduct.ImageUrls.Add(image.Url);
             }
         }
 
@@ -98,7 +149,7 @@ public class ProductsController : ControllerBase
     }
 
 
-    [HttpDelete("{id:int}", Name = "delete-Product")]
+    [HttpDelete("{id:int}", Name = "delete-product")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
         await _productRepository.DeleteAsync(p => p.Id == id);

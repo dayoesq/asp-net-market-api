@@ -12,7 +12,7 @@ using Market.Utils.Constants;
 
 namespace Market.Controllers;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
 [ApiController]
 [Route("[controller]")]
 public class CategoriesController : ControllerBase
@@ -32,10 +32,12 @@ public class CategoriesController : ControllerBase
     [HttpPost(Name = "create-category")]
     public async Task<IActionResult> CreateCategory([FromBody] CategoryUpsertDto model)
     {
+        var existingCategory = await _categoryRepository.GetAsync(c => c.Name.ToUpper() == model.Name.ToUpper());
+        if (existingCategory != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var category = _mapper.Map<Category>(model);
-        var createdCategory = _categoryRepository.Create(category);
+        var newCategory = _categoryRepository.Create(category);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateCategory), new { id = createdCategory.Id }, category);
+        return CreatedAtAction(nameof(CreateCategory), new { id = newCategory.Id }, category);
     }
 
     [AllowAnonymous]
@@ -63,7 +65,7 @@ public class CategoriesController : ControllerBase
     {
         var existingCategory = await _categoryRepository.GetAsync(c => c.Id == id);
         if (existingCategory == null) return NotFound(new { message = Errors.NotFound404 });
-        if (existingCategory.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
+        if (existingCategory.Name.ToUpper() == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingCategory);
         _categoryRepository.Update(id, result);
         await _unitOfWork.CommitAsync();
@@ -74,9 +76,8 @@ public class CategoriesController : ControllerBase
     [HttpDelete("{id:int}", Name = "delete-category")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
-        var existingCategory = await _categoryRepository.GetAsync(c => c.Id == id);
-        if (existingCategory == null) return NotFound(new { message = Errors.NotFound404 });
-        await _categoryRepository.DeleteAsync(c => c.Id == id);
+        var categoryIsDeleted = await _categoryRepository.DeleteAsync(c => c.Id == id);
+        if (!categoryIsDeleted) return NotFound(new { message = Errors.NotFound404 });
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }

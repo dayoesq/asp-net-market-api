@@ -31,7 +31,7 @@ public class DiscountsController : ControllerBase
     //[HttpPost(Name = "create-discount")]
     public async Task<IActionResult> CreateDiscount([FromBody] DiscountUpsertDto model)
     {
-        var existingDiscount = await _discountRepository.GetAsync(d => d.Code == model.Code.ToUpper());
+        var existingDiscount = await _discountRepository.GetAsync(d => d.Code.ToUpper() == model.Code.ToUpper());
         if (existingDiscount != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var discount = _mapper.Map<Discount>(model);
         var newDiscount = _discountRepository.Create(discount);
@@ -63,8 +63,8 @@ public class DiscountsController : ControllerBase
     public async Task<IActionResult> UpdateDiscount(int id, [FromBody] DiscountUpsertDto model)
     {
         var existingDiscount = await _discountRepository.GetAsync(d => d.Id == id);
-        if (existingDiscount == null) return NotFound(new { message = Errors.NotFound404 });
-        if (existingDiscount.Code == model.Code.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
+        if (existingDiscount == null) return NotFound(new ErrorResponse(Errors.Conflict409));
+        if (existingDiscount.Code.ToUpper() == model.Code.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingDiscount);
         _discountRepository.Update(id, result);
         await _unitOfWork.CommitAsync();
@@ -75,9 +75,8 @@ public class DiscountsController : ControllerBase
     [HttpDelete("{id:int}", Name = "delete-discount")]
     public async Task<IActionResult> DeleteDiscount(int id)
     {
-        var existingDiscount = await _discountRepository.GetAsync(d => d.Id == id);
-        if (existingDiscount == null) return NotFound(new { message = Errors.NotFound404 });
-        await _discountRepository.DeleteAsync(d => d.Id == id);
+        var discountIsDeleted = await _discountRepository.DeleteAsync(d => d.Id == id);
+        if (!discountIsDeleted) return NotFound(new { message = Errors.NotFound404 });
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }

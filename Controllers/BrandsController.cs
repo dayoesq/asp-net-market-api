@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Market.Utils;
 using Market.Utils.Constants;
+using Market.Filters;
 
 namespace Market.Controllers;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
 [ApiController]
 [Route("[controller]")]
 public class BrandsController : ControllerBase
@@ -29,6 +30,7 @@ public class BrandsController : ControllerBase
     }
 
     [HttpPost(Name = "create-brand")]
+    [TrimRequestStrings]
     public async Task<IActionResult> CreateBrand([FromBody] BrandUpsertDto model)
     {
         var existingBrand = await _brandRepository.GetAsync(b => b.Name.ToUpper() == model.Name.ToUpper());
@@ -50,19 +52,19 @@ public class BrandsController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{slug}", Name = "get-brand")]
-    public async Task<IActionResult> GetBrand(string slug)
+    [HttpGet("{id:int}", Name = "get-brand")]
+    public async Task<IActionResult> GetBrand(int id)
     {
-        var brand = await _brandRepository.GetAsync(b => b.Name == slug);
+        var brand = await _brandRepository.GetAsync(b => b.Id == id);
         if (brand == null) return NotFound(new { message = Errors.NotFound404 });
         var result = _mapper.Map<Brand, BrandDto>(brand);
         return Ok(result);
     }
 
-    [HttpPut("{slug}", Name = "update-brand")]
-    public async Task<IActionResult> UpdateBrand(string slug, [FromBody] BrandUpsertDto model)
+    [HttpPut("{id:int}", Name = "update-brand")]
+    public async Task<IActionResult> UpdateBrand(int id, [FromBody] BrandUpsertDto model)
     {
-        var existingBrand = await _brandRepository.GetAsync(b => b.Name == slug);
+        var existingBrand = await _brandRepository.GetAsync(b => b.Id == id);
         if (existingBrand == null) return NotFound(new { message = Errors.NotFound404 });
         if (existingBrand.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
         var result = _mapper.Map(model, existingBrand);
@@ -71,12 +73,12 @@ public class BrandsController : ControllerBase
 
     }
 
-    [HttpDelete("{slug}", Name = "delete-brand")]
-    public async Task<IActionResult> DeleteBrand(string slug)
+    [HttpDelete("{id:int}", Name = "delete-brand")]
+    public async Task<IActionResult> DeleteBrand(int id)
     {
-        var existingBrand = await _brandRepository.GetAsync(b => b.Name == slug);
+        var existingBrand = await _brandRepository.GetAsync(b => b.Id == id);
         if (existingBrand == null) return NotFound(new { message = Errors.NotFound404 });
-        await _brandRepository.DeleteAsync(b => b.Name == slug);
+        await _brandRepository.DeleteAsync(b => b.Id == id);
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }
