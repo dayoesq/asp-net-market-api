@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Market.Controllers;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Operation.SuperAdmin)]
 [ApiController]
 [Route("[controller]")]
 public class ProductTypesController : ControllerBase
@@ -30,6 +30,8 @@ public class ProductTypesController : ControllerBase
     [HttpPost(Name = "create-product-type")]
     public async Task<IActionResult> CreateProductType([FromBody] ProductTypeUpsertDto model)
     {
+        var existingProductType = await _productTypeRepository.GetAsync(pt => pt.Type.ToUpper() == model.Type.ToUpper());
+        if (existingProductType != null) return Conflict(new ErrorResponse(Errors.Conflict409));
         var productType = _mapper.Map<ProductType>(model);
         var newProductType = _productTypeRepository.Create(productType);
         await _unitOfWork.CommitAsync();
@@ -60,12 +62,17 @@ public class ProductTypesController : ControllerBase
     public async Task<IActionResult> UpdateProductType(int id, [FromBody] ProductTypeUpsertDto model)
     {
         var existingProductType = await _productTypeRepository.GetAsync(pt => pt.Id == id);
+
         if (existingProductType == null) return NotFound(new { message = Errors.NotFound404 });
-        var productType = _mapper.Map<ProductType>(model);
-        var result = _productTypeRepository.Update(id, productType);
+        if (existingProductType.Type.ToUpper() == model.Type.ToUpper()) return Conflict(new ErrorResponse(Errors.Conflict409));
+
+        _mapper.Map(model, existingProductType);
+
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateProductType), new { id = result.Id }, result);
+
+        return Ok(existingProductType);
     }
+
 
 
     [HttpDelete("{id}", Name = "delete-product-type")]

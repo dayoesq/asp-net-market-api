@@ -1,8 +1,16 @@
 {
   "Files": [
     {
-      "Id": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg",
-      "PackagePath": "staticwebassets/userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg"
+      "Id": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/images/.gitignore",
+      "PackagePath": "staticwebassets/images/.gitignore"
+    },
+    {
+      "Id": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/images/products/.gitignore",
+      "PackagePath": "staticwebassets/images/products/.gitignore"
+    },
+    {
+      "Id": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/images/users/677a19d8-63a8-4cfe-a3bb-74e759158a10.jpeg",
+      "PackagePath": "staticwebassets/images/users/677a19d8-63a8-4cfe-a3bb-74e759158a10.jpeg"
     },
     {
       "Id": "obj/Debug/net7.0/staticwebassets/msbuild.Market.Microsoft.AspNetCore.StaticWebAssets.props",

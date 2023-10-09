@@ -28,7 +28,11 @@ public class ProductUpsertDto
     public ICollection<string> ImageUrls { get; set; } = new List<string>();
     // Navigation properties
     public int? SizeId { get; set; }
+    [ForeignKey(nameof(SizeId))]
+    public Size? Size { get; set; }
     public int? ColorId { get; set; }
+    [ForeignKey(nameof(ColorId))]
+    public Color? Color { get; set; }
     [Required]
     public int ProductTypeId { get; set; }
     [ForeignKey(nameof(ProductTypeId))]

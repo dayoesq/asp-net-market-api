@@ -11,7 +11,7 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
     public Repository(ApplicationDbContext context)
     {
         _context = context;
-       
+
     }
 
     public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null)
@@ -30,7 +30,7 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
     {
         var entity = await _context.Set<TEntity>().FirstOrDefaultAsync(predicate);
         return entity!;
-    
+
     }
 
     public TEntity Create(TEntity entity)
@@ -48,6 +48,7 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
             throw new EntityNotFoundException($"Entity with id {id} not found.");
         }
 
+        // Update scalar properties
         _context.Entry(existingEntity).CurrentValues.SetValues(entity);
 
         if (_context.ChangeTracker.HasChanges())
@@ -57,6 +58,7 @@ public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntit
 
         return existingEntity;
     }
+
 
 
     public async Task<bool> DeleteAsync(Expression<Func<TEntity, bool>> predicate)

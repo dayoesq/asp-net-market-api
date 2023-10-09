@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "w6z8z4QTqoF5qIxbmKeYyp2vPt53Altu9G2mEOV3+3s=",
+  "Hash": "/BzFQnF0rUJKK2hcANHLjlPNowJWLFtPBrYZ1J+wJEA=",
   "Source": "Market",
   "BasePath": "_content/Market",
   "Mode": "Default",
@@ -17,12 +17,12 @@
   ],
   "Assets": [
     {
-      "Identity": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg",
+      "Identity": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/images/.gitignore",
       "SourceId": "Market",
       "SourceType": "Discovered",
       "ContentRoot": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/",
       "BasePath": "_content/Market",
-      "RelativePath": "userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg",
+      "RelativePath": "images/.gitignore",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -31,7 +31,41 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot/userImages/-7d19b29e-9f49-4c40-8847-1d0cddaa15c8/71fa2e74-115c-4951-9bf3-7673e852a4e5.jpeg"
+      "OriginalItemSpec": "wwwroot/images/.gitignore"
+    },
+    {
+      "Identity": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/images/products/.gitignore",
+      "SourceId": "Market",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/",
+      "BasePath": "_content/Market",
+      "RelativePath": "images/products/.gitignore",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/images/products/.gitignore"
+    },
+    {
+      "Identity": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/images/users/677a19d8-63a8-4cfe-a3bb-74e759158a10.jpeg",
+      "SourceId": "Market",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Volumes/MacExtended/Projects/dotnet/Market/wwwroot/",
+      "BasePath": "_content/Market",
+      "RelativePath": "images/users/677a19d8-63a8-4cfe-a3bb-74e759158a10.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/images/users/677a19d8-63a8-4cfe-a3bb-74e759158a10.jpeg"
     }
   ]
 }

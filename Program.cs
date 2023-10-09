@@ -2,7 +2,6 @@ using System.Text;
 using Market.ApiBehaviours;
 using Market.AutoMapperProfiles;
 using Market.DataContext;
-using Market.Filters;
 using Market.Models;
 using Market.OptionsSetup.Jwt;
 using Market.Repositories;
@@ -20,8 +19,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(BadRequestBehaviour.Parse);
-
-builder.Services.AddScoped<ValidateImageAndVideoFilterAttribute>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

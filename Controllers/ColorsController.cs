@@ -32,9 +32,9 @@ public class ColorsController : ControllerBase
     public async Task<IActionResult> CreateColor([FromBody] ColorUpsertDto model)
     {
         var color = _mapper.Map<Color>(model);
-        var createdColor = _colorRepository.Create(color);
+        var newColor = _colorRepository.Create(color);
         await _unitOfWork.CommitAsync();
-        return CreatedAtAction(nameof(CreateColor), new { id = createdColor.Id }, color);
+        return CreatedAtAction(nameof(CreateColor), new { id = newColor.Id }, color);
     }
 
     [AllowAnonymous]
@@ -62,7 +62,7 @@ public class ColorsController : ControllerBase
     {
         var existingColor = await _colorRepository.GetAsync(c => c.Id == id);
         if (existingColor == null) return NotFound(new { message = Errors.NotFound404 });
-        if (existingColor.Name == model.Name.ToUpper()) return Conflict(new { message = Errors.Conflict409 });
+        if (existingColor.Name.ToUpper() == model.Name.ToUpper()) return Conflict(new ErrorResponse(Errors.Conflict409));
         var result = _mapper.Map(model, existingColor);
         _colorRepository.Update(id, result);
         await _unitOfWork.CommitAsync();
@@ -73,9 +73,8 @@ public class ColorsController : ControllerBase
     [HttpDelete("{id:int}", Name = "delete-color")]
     public async Task<IActionResult> DeleteColor(int id)
     {
-        var existingColor = await _colorRepository.GetAsync(c => c.Id == id);
-        if (existingColor == null) return NotFound(new { message = Errors.NotFound404 });
-        await _colorRepository.DeleteAsync(c => c.Id == id);
+        var colorIsDeleted = await _colorRepository.DeleteAsync(c => c.Id == id);
+        if (!colorIsDeleted) return NotFound(new { message = Errors.NotFound404 });
         await _unitOfWork.CommitAsync();
         return Ok(new { message = ResponseMessage.Success });
     }
